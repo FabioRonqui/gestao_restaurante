@@ -1,17 +1,37 @@
-import React from 'react';
 
-export default function Page() {
+import { View, Text, StyleSheet } from 'react-native';
+
+export default function HomeScreen() {
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column',
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh',
-      fontFamily: 'sans-serif'
-    }}>
-      <h1>Menu do Restaurante</h1>
-      <p>O app de gestão está rodando com sucesso no navegador esta sendo alterado!</p>
-    </div>
+    <View style={styles.container}>
+      <Text style={styles.title}>
+        Food Delivery
+      </Text>
+
+      <Text style={styles.subtitle}>
+        Seu próximo pedido começa aqui.
+      </Text>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#222222',
+  },
+  subtitle: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
+  },
+});
