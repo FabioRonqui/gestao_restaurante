@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "gestao_restaurante",
+    "slug": "gestao_restaurante",
+    "version": "1.0.0",
+    "scheme": "gestao-restaurante",
+    "platforms": ["ios", "android", "web"],
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
