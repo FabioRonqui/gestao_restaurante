@@ -1,4 +1,4 @@
-// Mesma estrutura de loguin, mas para a tela de cadastro.
+// Mesma estrutura de login, mas para a tela de cadastro.
 import { View, Text, StyleSheet } from 'react-native';
 
 export default function SignUpScreen() {

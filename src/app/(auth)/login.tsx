@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 export default function LoginScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Log In</Text>
+      <Text style={styles.title}>Sign In</Text>
       <Text>Login será implementado nesta etapa futura.</Text>
     </View>
   );

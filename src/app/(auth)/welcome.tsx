@@ -1,4 +1,5 @@
 
+//Aqui é onde editamos a tela para fazer cadastro e login.
 import {
   View,
   Text,
@@ -7,17 +8,16 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { theme } from '../../constants/theme';
-
+import BrandLogo  from '../../components/ui/BrandLogo';
+//SOBRE O IMPORT:(react)
+//Quando o import busca multiplos arquivos, ele usa chaves.
+//E quando o import busca apenas um arquivo, ele não usa chaves.
 export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
+      {/* Implemented BrandLogo here */}
       <View style={styles.brand}>
-        <Text style={styles.logo}>♡</Text>
-
-        <Text style={styles.brandName}>
-          <Text style={styles.brandYellow}>YUM</Text>
-          QUICK
-        </Text>
+        <BrandLogo variant="welcome" />
       </View>
 
       <View style={styles.bottom}>
@@ -54,20 +54,6 @@ const styles = StyleSheet.create({
   },
   brand: {
     alignItems: 'center',
-  },
-  logo: {
-    color: theme.colors.background,
-    fontSize: 130,
-    lineHeight: 150,
-  },
-  brandName: {
-    color: '#FFFFFF',
-    fontSize: 25,
-    fontWeight: '900',
-    marginTop: 8,
-  },
-  brandYellow: {
-    color: theme.colors.background,
   },
   bottom: {
     width: '100%',

@@ -3,9 +3,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   min-height: 100vh;
   background-color: #f0f2f5;
   color: #333;
+}
+
+.home-image {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
 }
 
 .home-title {
@@ -31,4 +38,3 @@
 .home-button:hover {
   background-color: #0056b3;
 }
-
