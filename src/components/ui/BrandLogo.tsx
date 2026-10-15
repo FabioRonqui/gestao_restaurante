@@ -32,13 +32,14 @@ export default function BrandLogo({
                 ? theme.colors.primary
                 : theme.colors.background,
             }}
+            //Nome de restaurante 10/10 
           >
-            YUM
+            DONA
           </Text>
           
           {/* 4. Implemented inline white styling for QUICK */}
           <Text style={{ color: '#FFFFFF' }}>
-            QUICK
+            MARIA
           </Text>
         </Text>
       )}

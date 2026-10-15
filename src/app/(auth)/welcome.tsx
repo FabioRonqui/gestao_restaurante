@@ -22,7 +22,7 @@ export default function WelcomeScreen() {
 
       <View style={styles.bottom}>
         <Text style={styles.description}>
-          Delicious food, delivered to you.
+            A fome bateu? A gente resolve!
         </Text>
 
         <Pressable
