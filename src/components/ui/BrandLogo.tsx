@@ -1,3 +1,5 @@
+//Aqui editamos as primeiras telas do nosso app
+
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { theme } from '../../constants/theme'; // Imported theme to access colors
@@ -34,12 +36,12 @@ export default function BrandLogo({
             }}
             //Nome de restaurante 10/10 
           >
-            DONA
+            Gestão
           </Text>
           
           {/* 4. Implemented inline white styling for QUICK */}
           <Text style={{ color: '#FFFFFF' }}>
-            MARIA
+            Restaurante
           </Text>
         </Text>
       )}
