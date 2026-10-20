@@ -1,4 +1,5 @@
-
+//Aqui nois temos um mock de pedidos que significa que eles são dados falsos
+//que nao vem de nenhum DB, mas que servem para testar a aplicação.
 import type { Order } from '../types/order';
 
 export const mockOrders: Order[] = [
