@@ -1,4 +1,4 @@
-
+// Esse são os status dos nossos pedidos, vou deixar em ingles mesmo por enquanto.
 import type { OrderStatus } from '../types/order';
 
 export const orderStatusLabels: Record<OrderStatus, string> = {
