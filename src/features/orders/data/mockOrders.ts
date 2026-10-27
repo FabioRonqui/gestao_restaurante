@@ -1,74 +1,88 @@
 //Aqui nois temos um mock de pedidos que significa que eles são dados falsos
 //que nao vem de nenhum DB, mas que servem para testar a aplicação.
 
+
 import type { Order } from '../types/order';
 
 export const mockOrders: Order[] = [
   {
     id: 'YQ-1001',
-    restaurantId: 'rest-01',
-    restaurantName: 'Burger House',
+    restaurantId: 'restaurant-1',
+    restaurantName: 'Chicken Curry',
     items: [
       {
-          productId: 'prod-01',
-          name: 'Classic Burger',
-          quantity: 2,
-          unitPriceCents: 2590,
-          unitPrice: 0
-      },
-      {
-          productId: 'prod-02',
-          name: 'French Fries',
-          quantity: 1,
-          unitPriceCents: 990,
-          unitPrice: 0
+        productId: 'product-1',
+        name: 'Chicken Curry',
+        quantity: 2,
+        unitPriceCents: 2500,
+        unitPrice: 0
       },
     ],
-    subtotalCents: 6070,
-    deliveryFeeCents: 500,
-    totalCents: 6570,
-    status: 'preparing',
+    subtotalCents: 5000,
+    deliveryFeeCents: 0,
+    totalCents: 5000,
+    status: 'delivered',
     deliveryAddress: 'Av. Central, 120',
-    createdAt: '2026-10-17T11:30:00',
+    createdAt: '2026-11-29T13:20:00',
   },
   {
     id: 'YQ-1002',
-    restaurantId: 'rest-02',
-    restaurantName: 'Pizza Corner',
+    restaurantId: 'restaurant-2',
+    restaurantName: 'Bean and Vegetable Burger',
     items: [
       {
-          productId: 'prod-03',
-          name: 'Margherita Pizza',
-          quantity: 1,
-          unitPriceCents: 4590,
-          unitPrice: 0
+        productId: 'product-2',
+        name: 'Bean and Vegetable Burger',
+        quantity: 2,
+        unitPriceCents: 2500,
+        unitPrice: 0
       },
     ],
-    subtotalCents: 4590,
-    deliveryFeeCents: 700,
-    totalCents: 5290,
+    subtotalCents: 5000,
+    deliveryFeeCents: 0,
+    totalCents: 5000,
     status: 'delivered',
     deliveryAddress: 'Rua das Flores, 45',
-    createdAt: '2026-10-16T19:15:00',
+    createdAt: '2026-11-10T18:05:00',
   },
   {
     id: 'YQ-1003',
-    restaurantId: 'rest-03',
-    restaurantName: 'Green Bowl',
+    restaurantId: 'restaurant-3',
+    restaurantName: 'Coffee Latte',
     items: [
       {
-          productId: 'prod-04',
-          name: 'Chicken Salad',
-          quantity: 1,
-          unitPriceCents: 2890,
-          unitPrice: 0
+        productId: 'product-3',
+        name: 'Coffee Latte',
+        quantity: 1,
+        unitPriceCents: 800,
+        unitPrice: 0
       },
     ],
-    subtotalCents: 2890,
-    deliveryFeeCents: 400,
-    totalCents: 3290,
-    status: 'out_for_delivery',
+    subtotalCents: 800,
+    deliveryFeeCents: 0,
+    totalCents: 800,
+    status: 'delivered',
     deliveryAddress: 'Rua Paraná, 80',
-    createdAt: '2026-10-17T12:00:00',
+    createdAt: '2026-11-10T11:30:00',
+  },
+  {
+    id: 'YQ-1004',
+    restaurantId: 'restaurant-4',
+    restaurantName: 'Strawberry Cheesecake',
+    items: [
+      {
+        productId: 'product-4',
+        name: 'Strawberry Cheesecake',
+        quantity: 2,
+        unitPriceCents: 1100,
+        unitPrice: 0
+      },
+    ],
+    subtotalCents: 2200,
+    deliveryFeeCents: 0,
+    totalCents: 2200,
+    status: 'delivered',
+    deliveryAddress: 'Av. Brasil, 200',
+    createdAt: '2026-10-03T15:40:00',
   },
 ];
