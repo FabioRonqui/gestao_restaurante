@@ -1,0 +1,197 @@
+/* Estilos exclusivos da tela Mesas.
+   Todas as classes começam com "mesas-" para não afetar as telas dos colegas.
+   Para combinar com o visual do grupo, ajuste só as variáveis abaixo. */
+
+.mesas-page {
+  --mesas-fundo: #f5f6f4;
+  --mesas-superficie: #ffffff;
+  --mesas-texto: #1d2724;
+  --mesas-texto-suave: #5d6b66;
+  --mesas-borda: #dfe4e1;
+  --mesas-marca: #14532d;
+
+  --mesas-livre-fundo: #dcfce7;
+  --mesas-livre-texto: #14532d;
+  --mesas-ocupada-fundo: #fee2e2;
+  --mesas-ocupada-texto: #991b1b;
+  --mesas-reservada-fundo: #fef3c7;
+  --mesas-reservada-texto: #854d0e;
+
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 32px 20px 48px;
+  background: var(--mesas-fundo);
+  color: var(--mesas-texto);
+  font-family: inherit;
+  text-align: left;
+}
+
+.mesas-page *,
+.mesas-page *::before,
+.mesas-page *::after {
+  box-sizing: border-box;
+}
+
+.mesas-header,
+.mesas-card {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.mesas-header {
+  margin-bottom: 24px;
+}
+
+.mesas-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mesas-marca);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mesas-title {
+  margin: 8px 0 0;
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--mesas-texto);
+}
+
+.mesas-card {
+  background: var(--mesas-superficie);
+  border: 1px solid var(--mesas-borda);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mesas-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mesas-table th,
+.mesas-table td {
+  padding: 14px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--mesas-borda);
+}
+
+.mesas-table th {
+  background: var(--mesas-fundo);
+  color: var(--mesas-texto-suave);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.mesas-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.mesas-table tbody tr:hover {
+  background: #fafbfa;
+}
+
+.mesas-number {
+  font-weight: 600;
+}
+
+.mesas-people {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mesas-texto-suave);
+}
+
+.mesas-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Bolinha antes do texto: o status não depende só da cor */
+.mesas-status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.mesas-status--livre {
+  background: var(--mesas-livre-fundo);
+  color: var(--mesas-livre-texto);
+}
+
+.mesas-status--ocupada {
+  background: var(--mesas-ocupada-fundo);
+  color: var(--mesas-ocupada-texto);
+}
+
+.mesas-status--reservada {
+  background: var(--mesas-reservada-fundo);
+  color: var(--mesas-reservada-texto);
+}
+
+/* Celular: cada linha da tabela vira um cartão */
+@media (max-width: 640px) {
+  .mesas-page {
+    padding: 24px 16px 40px;
+  }
+
+  .mesas-title {
+    font-size: 1.625rem;
+  }
+
+  .mesas-card {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .mesas-table,
+  .mesas-table tbody,
+  .mesas-table tr,
+  .mesas-table td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Esconde o cabeçalho só visualmente (leitores de tela ainda o leem) */
+  .mesas-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .mesas-table tbody tr {
+    margin-bottom: 12px;
+    background: var(--mesas-superficie);
+    border: 1px solid var(--mesas-borda);
+    border-radius: 12px;
+    padding: 4px 0;
+  }
+
+  .mesas-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 16px;
+    border-bottom: none;
+  }
+
+  .mesas-table td::before {
+    content: attr(data-label);
+    color: var(--mesas-texto-suave);
+    font-size: 0.875rem;
+  }
+}
