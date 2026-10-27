@@ -1,176 +1,201 @@
 
+import { Ionicons } from '@expo/vector-icons';
 import {
-  View,
-  Text,
+  Alert,
+  Image,
   Pressable,
   StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import type { Order } from '../types/order';
-import { orderStatusLabels } from '../utils/orderStatus';
 
-type Props = {
+type OrderCardProps = {
   order: Order;
   onPress: () => void;
 };
 
-function formatPrice(cents: number) {
-  return (cents / 100).toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  });
-}
-
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString('pt-BR');
-}
-
-export default function OrderCard({ order, onPress }: Props) {
-  const quantity = order.items.reduce(
+export function OrderCard({ order, onPress }: OrderCardProps) {
+  const itemCount = order.items.reduce(
     (total, item) => total + item.quantity,
     0,
   );
 
+  const formattedPrice = `$${(order.totalCents / 100).toFixed(2)}`;
+
+  const formattedDate = new Date(order.createdAt)
+    .toLocaleString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+    .replace(',', ',');
+
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <View style={styles.restaurantInfo}>
-          <Text style={styles.restaurant}>
+    <Pressable style={styles.card} onPress={onPress}>
+      <View style={styles.imagePlaceholder}>
+        <Ionicons name="restaurant-outline" size={32} color="#F4511E" />
+        <Text style={styles.imageLabel}>Food photo</Text>
+      </View>
+
+      <View style={styles.content}>
+        <View style={styles.topRow}>
+          <Text style={styles.restaurantName} numberOfLines={2}>
             {order.restaurantName}
           </Text>
 
-          <Text style={styles.date}>
-            Order #{order.id} · {formatDate(order.createdAt)}
+          <Text style={styles.price}>{formattedPrice}</Text>
+        </View>
+
+        <View style={styles.detailsRow}>
+          <View style={styles.orderInfo}>
+            <Text style={styles.date}>{formattedDate}</Text>
+
+            <View style={styles.statusRow}>
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={16}
+                color="#F4511E"
+              />
+              <Text style={styles.status}>Order delivered</Text>
+            </View>
+          </View>
+
+          <Text style={styles.itemCount}>
+            {itemCount} {itemCount === 1 ? 'item' : 'items'}
           </Text>
         </View>
 
-        <Text style={styles.quantity}>
-          {quantity} {quantity === 1 ? 'item' : 'items'}
-        </Text>
+        <View style={styles.actions}>
+          <Pressable
+            style={styles.reviewButton}
+            onPress={() =>
+              Alert.alert('Leave a review', 'Review feature coming soon.')
+            }
+          >
+            <Text style={styles.reviewText}>Leave a review</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.orderAgainButton}
+            onPress={() =>
+              Alert.alert('Order Again', 'Reordering will be available soon.')
+            }
+          >
+            <Text style={styles.orderAgainText}>Order Again</Text>
+          </Pressable>
+        </View>
       </View>
-
-      <View style={styles.divider} />
-
-      {order.items.map((item) => (
-        <View key={item.productId} style={styles.itemRow}>
-          <Text style={styles.itemName}>
-            {item.quantity}x {item.name}
-          </Text>
-
-          <Text style={styles.itemPrice}>
-            {formatPrice(item.unitPriceCents * item.quantity)}
-          </Text>
-        </View>
-      ))}
-
-      <View style={styles.footer}>
-        <View style={styles.totalContainer}>
-          <Text style={styles.status}>
-            {orderStatusLabels[order.status]}
-          </Text>
-
-          <Text style={styles.total}>
-            {formatPrice(order.totalCents)}
-          </Text>
-        </View>
-
-        <Pressable
-          onPress={onPress}
-          style={styles.button}
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonText}>View details</Text>
-        </Pressable>
-      </View>
-    </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
+    flexDirection: 'row',
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFD3C2',
+    gap: 14,
   },
-  header: {
+  imagePlaceholder: {
+    width: 88,
+    height: 136,
+    borderRadius: 22,
+    backgroundColor: '#FFE0D2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  imageLabel: {
+    color: '#F4511E',
+    fontSize: 10,
+    marginTop: 6,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+    minWidth: 0,
+  },
+  topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    gap: 6,
   },
-  restaurantInfo: {
+  restaurantName: {
     flex: 1,
-    marginRight: 8,
-  },
-  restaurant: {
-    fontSize: 17,
+    color: '#40231F',
+    fontSize: 18,
     fontWeight: '700',
-    color: '#242424',
+    lineHeight: 21,
   },
-  date: {
-    fontSize: 12,
-    color: '#777777',
+  price: {
+    color: '#F4511E',
+    fontSize: 19,
+    fontWeight: '600',
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 4,
     marginTop: 5,
   },
-  quantity: {
-    fontSize: 12,
-    color: '#666666',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#EEEEEE',
-    marginVertical: 16,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  itemName: {
+  orderInfo: {
     flex: 1,
-    fontSize: 14,
-    color: '#444444',
-    marginRight: 12,
   },
-  itemPrice: {
-    fontSize: 14,
-    color: '#444444',
+  date: {
+    color: '#40231F',
+    fontSize: 13,
+    marginBottom: 3,
   },
-  footer: {
-    borderTopWidth: 1,
-    borderTopColor: '#EEEEEE',
-    marginTop: 8,
-    paddingTop: 14,
-    gap: 12,
-  },
-  totalContainer: {
+  statusRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 12,
+    gap: 4,
   },
   status: {
-    flex: 1,
+    color: '#F4511E',
     fontSize: 12,
-    color: '#E94E1B',
-    fontWeight: '600',
+    flexShrink: 1,
   },
-  total: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#222222',
+  itemCount: {
+    color: '#40231F',
+    fontSize: 13,
+    marginTop: 1,
   },
-  button: {
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 11,
-    borderRadius: 12,
-    backgroundColor: '#F04B1D',
+    gap: 6,
+    marginTop: 8,
   },
-  buttonText: {
+  reviewButton: {
+    backgroundColor: '#F4511E',
+    borderRadius: 22,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  reviewText: {
     color: '#FFFFFF',
+    fontSize: 12,
     fontWeight: '600',
-    fontSize: 14,
+  },
+  orderAgainButton: {
+    backgroundColor: '#FFE0D2',
+    borderRadius: 22,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  orderAgainText: {
+    color: '#F4511E',
+    fontSize: 12,
   },
 });

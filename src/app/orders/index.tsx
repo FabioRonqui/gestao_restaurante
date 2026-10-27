@@ -8,10 +8,11 @@ import {
   StyleSheet,
 } from 'react-native';
 import { router } from 'expo-router';
-
+import OrdersHeader from '../../features/orders/components/OrdersHeader';
+import OrdersTabBar from '../../features/orders/components/OrdersTabBar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { mockOrders } from '../../features/orders/data/mockOrders';
-import OrderCard from '../../features/orders/components/OrderCard';
-//import type { OrderStatus } from '../../features/orders/types/order';
+import { OrderCard } from '../../features/orders/components/OrderCard';
 
 type Filter = 'all' | 'active' | 'delivered';
 
@@ -35,88 +36,89 @@ export default function OrdersScreen() {
     { label: 'Active', value: 'active' },
     { label: 'Delivered', value: 'delivered' },
   ];
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>My Orders</Text>
-        <Text style={styles.subtitle}>
-          Track your orders and view your history.
-        </Text>
-      </View>
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={['top', 'bottom']}
+    >
+      <View style={styles.container}>
+        <OrdersHeader title="My Orders" onBack={() => router.back()} />
 
-      <View style={styles.filters}>
-        {filters.map((item) => {
-          const selected = filter === item.value;
+        <View style={styles.header}>
+          <Text style={styles.subtitle}>
+            Track your orders and view your history.
+          </Text>
+        </View>
 
-          return (
-            <Pressable
-              key={item.value}
-              onPress={() => setFilter(item.value)}
-              style={[
-                styles.filterButton,
-                selected && styles.selectedFilter,
-              ]}
-            >
-              <Text
+        <View style={styles.filters}>
+          {filters.map((item) => {
+            const selected = filter === item.value;
+
+            return (
+              <Pressable
+                key={item.value}
+                onPress={() => setFilter(item.value)}
                 style={[
-                  styles.filterText,
-                  selected && styles.selectedFilterText,
+                  styles.filterButton,
+                  selected && styles.selectedFilter,
                 ]}
               >
-                {item.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+                <Text
+                  style={[
+                    styles.filterText,
+                    selected && styles.selectedFilterText,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.list}
-      >
-        {visibleOrders.length > 0 ? (
-          visibleOrders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onPress={() =>
-                router.push(`/orders/${order.id}`)
-              }
-            />
-          ))
-        ) : (
-          <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>
-              No orders found
-            </Text>
-            <Text style={styles.emptyText}>
-              Your orders will appear here.
-            </Text>
-          </View>
-        )}
-      </ScrollView>
-    </View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.list}
+        >
+          {visibleOrders.length > 0 ? (
+            visibleOrders.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onPress={() => router.push(`/orders/${order.id}`)}
+              />
+            ))
+          ) : (
+            <View style={styles.empty}>
+              <Text style={styles.emptyTitle}>No orders found</Text>
+              <Text style={styles.emptyText}>
+                Your orders will appear here.
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+
+        <OrdersTabBar activeTab="Orders" />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F7F6F6',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#FFF9F1',
-    paddingTop: 60,
+    backgroundColor: '#F7F6F6',
   },
   header: {
     paddingHorizontal: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#222222',
-  },
   subtitle: {
     marginTop: 8,
-    color: '#777777',
+    color: '#40231F',
     fontSize: 14,
   },
   filters: {
@@ -130,21 +132,21 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     paddingHorizontal: 13,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FFE0D2',
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: '#FFD3C2',
   },
   selectedFilter: {
-    backgroundColor: '#F04B1D',
-    borderColor: '#F04B1D',
+    backgroundColor: '#F4511E',
+    borderColor: '#F4511E',
   },
   filterText: {
     fontSize: 12,
-    color: '#555555',
+    color: '#40231F',
     fontWeight: '600',
   },
   selectedFilterText: {
-    color: '#FFFFFF',
+    color: '#40231F',
   },
   list: {
     paddingHorizontal: 20,
@@ -157,10 +159,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#222222',
+    color: '#40231F',
   },
   emptyText: {
     marginTop: 8,
-    color: '#777777',
+    color: '#40231F',
   },
 });
