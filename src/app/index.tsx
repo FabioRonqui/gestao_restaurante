@@ -7,6 +7,7 @@ import { theme } from '../constants/theme';
 
 //Aqui é o codigo usado para fazer a tela esperar 3 segundos antes de ir para
 //a tela de login. Por isso o nome SplashScreen.
+//vou criar um cicular progress indicator pra nao parecer que a tela travou
 export default function SplashScreen() {
   useEffect(() => {
     const timeout = setTimeout(() => router.replace('/welcome'), 3000);
