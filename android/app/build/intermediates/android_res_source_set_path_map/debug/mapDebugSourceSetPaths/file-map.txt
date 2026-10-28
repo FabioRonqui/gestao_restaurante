@@ -1,9 +1,0 @@
-com.anonymous.gestao_restaurante.app-pngs-0 C:\projetos\React\gestao_restaurante\android\app\build\generated\res\pngs\debug
-com.anonymous.gestao_restaurante.app-resValues-1 C:\projetos\React\gestao_restaurante\android\app\build\generated\res\resValues\debug
-com.anonymous.gestao_restaurante.app-updated_navigation_xml-2 C:\projetos\React\gestao_restaurante\android\app\build\generated\updated_navigation_xml\debug
-com.anonymous.gestao_restaurante.app-packageDebugResources-3 C:\projetos\React\gestao_restaurante\android\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
-com.anonymous.gestao_restaurante.app-packageDebugResources-4 C:\projetos\React\gestao_restaurante\android\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
-com.anonymous.gestao_restaurante.app-debug-5 C:\projetos\React\gestao_restaurante\android\app\build\intermediates\merged_res\debug\mergeDebugResources
-com.anonymous.gestao_restaurante.app-debug-6 C:\projetos\React\gestao_restaurante\android\app\src\debug\res
-com.anonymous.gestao_restaurante.app-main-7 C:\projetos\React\gestao_restaurante\android\app\src\main\res
-gradleHome-0 C:\Users\Jesus\.gradle
