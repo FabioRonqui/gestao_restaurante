@@ -4,7 +4,7 @@
     "slug": "gestao_restaurante",
     "version": "1.0.0",
     "scheme": "gestao-restaurante",
-    "platforms": ["ios", "android", "web"],
+    "platforms": ["ios", "web"],
     "web": {
       "bundler": "metro"
     },
