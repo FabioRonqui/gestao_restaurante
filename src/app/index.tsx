@@ -1,15 +1,13 @@
-
 import { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import BrandLogo from '../components/ui/BrandLogo';
 import { theme } from '../constants/theme';
 
-//Aqui é o codigo usado para fazer a tela esperar 3 segundos antes de ir para
-//a tela de login. Por isso o nome SplashScreen.
-//vou criar um cicular progress indicator pra nao parecer que a tela travou
+
 export default function SplashScreen() {
   useEffect(() => {
+    // Redireciona para /welcome após 3 segundos
     const timeout = setTimeout(() => router.replace('/welcome'), 3000);
     return () => clearTimeout(timeout);
   }, []);
@@ -19,6 +17,13 @@ export default function SplashScreen() {
       <View style={styles.logoContainer}>
         <BrandLogo variant="welcome" isSplash />
       </View>
+
+      {/* Adicionado o indicador de carregamento que você planejava */}
+      <ActivityIndicator 
+        size="large" 
+        color={theme.colors.primary || '#F4511E'} 
+        style={styles.loader} 
+      />
     </View>
   );
 }
@@ -33,5 +38,9 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 24, // Espaço entre a logo e o loader
+  },
+  loader: {
+    marginTop: 16,
   },
 });

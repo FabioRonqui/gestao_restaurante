@@ -1,104 +1,42 @@
-
-import { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
-import { router } from 'expo-router';
-import OrdersHeader from '../../features/orders/components/OrdersHeader';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { theme } from '../../constants/theme';
+import { mockProducts } from '../../features/products/data/mockProducts';
+import ProductTable from '../../features/products/components/ProductTable';
 import OrdersTabBar from '../../features/orders/components/OrdersTabBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { mockOrders } from '../../features/orders/data/mockOrders';
-import { OrderCard } from '../../features/orders/components/OrderCard';
 
-type Filter = 'all' | 'active' | 'delivered';
-
-export default function OrdersScreen() {
-  const [filter, setFilter] = useState<Filter>('all');
-
-  const visibleOrders = mockOrders.filter((order) => {
-    if (filter === 'active') {
-      return !['delivered', 'cancelled'].includes(order.status);
-    }
-
-    if (filter === 'delivered') {
-      return order.status === 'delivered';
-    }
-
-    return true;
-  });
-
-  const filters: { label: string; value: Filter }[] = [
-    { label: 'All orders', value: 'all' },
-    { label: 'Active', value: 'active' },
-    { label: 'Delivered', value: 'delivered' },
-  ];
+export default function ProductsScreen() {
   return (
-    <SafeAreaView
-      style={styles.safeArea}
-      edges={['top', 'bottom']}
-    >
+    <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <OrdersHeader title="My Orders" onBack={() => router.back()} />
-
+        
+        {/* Barra superior fixa amarela limpa */}
         <View style={styles.header}>
-          <Text style={styles.subtitle}>
-            Track your orders and view your history.
-          </Text>
+          {/* Mantido estritamente o título principal em branco */}
+          <Text style={styles.title}>Pedidos</Text>
         </View>
 
-        <View style={styles.filters}>
-          {filters.map((item) => {
-            const selected = filter === item.value;
-
-            return (
-              <Pressable
-                key={item.value}
-                onPress={() => setFilter(item.value)}
-                style={[
-                  styles.filterButton,
-                  selected && styles.selectedFilter,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.filterText,
-                    selected && styles.selectedFilterText,
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </Pressable>
-            );
-          })}
+        {/* Quadro central com as bordas arredondadas e fundo creme */}
+        <View style={styles.productsPanel}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={styles.productsScroll}
+            contentContainerStyle={styles.content}
+          >
+            {mockProducts.length > 0 ? (
+              <ProductTable products={mockProducts} />
+            ) : (
+              <View style={styles.empty}>
+                <Text style={styles.emptyTitle}>Nenhum produto encontrado</Text>
+                <Text style={styles.emptyText}>Os produtos aparecerão aqui.</Text>
+              </View>
+            )}
+          </ScrollView>
+          
+          {/* Menu inferior */}
+          <OrdersTabBar activeTab="Pedidos" />
         </View>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.list}
-        >
-          {visibleOrders.length > 0 ? (
-            visibleOrders.map((order) => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onPress={() => router.push(`/orders/${order.id}`)}
-              />
-            ))
-          ) : (
-            <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No orders found</Text>
-              <Text style={styles.emptyText}>
-                Your orders will appear here.
-              </Text>
-            </View>
-          )}
-        </ScrollView>
-
-        <OrdersTabBar activeTab="Orders" />
       </View>
     </SafeAreaView>
   );
@@ -107,48 +45,41 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F7F6F6',
+    backgroundColor: '#FFD43A', // Mantém o topo do dispositivo em amarelo
   },
   container: {
     flex: 1,
-    backgroundColor: '#F7F6F6',
+    backgroundColor: '#FFD43A', // Fundo amarelo da barra superior
   },
   header: {
-    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 48, // Espaço confortável para a sobreposição da borda arredondada
+    alignItems: 'center', // Centraliza o título horizontalmente
   },
-  subtitle: {
-    marginTop: 8,
-    color: '#40231F',
-    fontSize: 14,
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF', // Texto "Produtos" configurado estritamente em branco
   },
-  filters: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 8,
-    marginTop: 22,
-    marginBottom: 18,
+  productsPanel: {
+    flex: 1,
+    backgroundColor: '#FFF9F1', // Mantém o fundo creme original
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    overflow: 'hidden',
+    marginTop: -24, // Sobe o painel para revelar o desenho arredondado no topo
+    zIndex: 1,
+    elevation: 1,
   },
-  filterButton: {
-    paddingVertical: 9,
-    paddingHorizontal: 13,
-    borderRadius: 20,
-    backgroundColor: '#FFE0D2',
-    borderWidth: 1,
-    borderColor: '#FFD3C2',
+  productsScroll: {
+    flex: 1,
   },
-  selectedFilter: {
-    backgroundColor: '#F4511E',
-    borderColor: '#F4511E',
-  },
-  filterText: {
-    fontSize: 12,
-    color: '#40231F',
-    fontWeight: '600',
-  },
-  selectedFilterText: {
-    color: '#40231F',
-  },
-  list: {
+  content: {
+    width: '100%',
+    maxWidth: 1100,
+    alignSelf: 'center',
+    paddingTop: 24,
     paddingHorizontal: 20,
     paddingBottom: 32,
   },
@@ -159,10 +90,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#40231F',
+    color: '#222222',
   },
   emptyText: {
     marginTop: 8,
-    color: '#40231F',
+    color: '#777777',
   },
 });
