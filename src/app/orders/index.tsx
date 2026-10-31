@@ -2,7 +2,6 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { theme } from '../../constants/theme';
 import { mockProducts } from '../../features/products/data/mockProducts';
 import ProductTable from '../../features/products/components/ProductTable';
-import OrdersTabBar from '../../features/orders/components/OrdersTabBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProductsScreen() {
@@ -32,9 +31,6 @@ export default function ProductsScreen() {
               </View>
             )}
           </ScrollView>
-          
-          {/* Menu inferior */}
-          <OrdersTabBar activeTab="Pedidos" />
         </View>
 
       </View>
