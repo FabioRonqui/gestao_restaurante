@@ -1,8 +1,9 @@
+
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-type TabRoute = '/products' | '/orders';
+type TabRoute = '/' | '/products' | '/orders';
 
 type Tab = {
   label: string;
@@ -11,10 +12,10 @@ type Tab = {
 };
 
 const tabs: Tab[] = [
-  { label: 'Home', icon: 'home', route: '/products' },
-  { label: 'Search', icon: 'search' },
-  { label: 'Pedidos', icon: 'file-text', route: '/orders' },
-  { label: 'Profile', icon: 'user' },
+  { label: 'Home', icon: 'home', route: '/' },
+  { label: 'Cardápio', icon: 'search', route: '/products' },
+  { label: 'Favorites', icon: 'heart' },
+  { label: 'Orders', icon: 'file-text', route: '/orders' },
   { label: 'Support', icon: 'headphones' },
 ];
 
@@ -22,9 +23,7 @@ type Props = {
   activeTab: string;
 };
 
-export default function OrdersTabBar({
-  activeTab,
-}: Props) {
+export default function OrdersTabBar({ activeTab }: Props) {
   return (
     <View style={styles.tabBar}>
       {tabs.map((tab) => {
@@ -39,27 +38,24 @@ export default function OrdersTabBar({
                 router.navigate(tab.route);
               }
             }}
-            disabled={!tab.route}
+            disabled={!tab.route || active}
             accessibilityRole="button"
             accessibilityLabel={tab.label}
-            accessibilityState={{ selected: active, disabled: !tab.route }}
+            accessibilityState={{
+              selected: active,
+              disabled: !tab.route || active,
+            }}
           >
             <Feather
               name={tab.icon}
-              size={22}
+              size={23}
               color={active ? '#FFFFFF' : '#FFD3C2'}
             />
 
-            <Text
-              style={[
-                styles.label,
-                active && styles.activeLabel,
-              ]}
-            >
+            <Text style={[styles.label, active && styles.activeLabel]}>
               {tab.label}
             </Text>
 
-            {active && <View style={styles.indicator} />}
           </Pressable>
         );
       })}
@@ -77,7 +73,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
   },
   tab: {
     flex: 1,
@@ -94,13 +90,5 @@ const styles = StyleSheet.create({
   activeLabel: {
     color: '#FFFFFF',
     fontWeight: '700',
-  },
-  indicator: {
-    position: 'absolute',
-    top: 0,
-    width: 22,
-    height: 3,
-    borderRadius: 3,
-    backgroundColor: '#FFFFFF',
   },
 });
