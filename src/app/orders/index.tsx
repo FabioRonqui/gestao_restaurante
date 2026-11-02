@@ -1,33 +1,44 @@
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { theme } from '../../constants/theme';
 import { mockProducts } from '../../features/products/data/mockProducts';
 import ProductTable from '../../features/products/components/ProductTable';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import OrdersHeader from '../../features/orders/components/OrdersHeader'; // Adjust this path if your component file is elsewhere
 
 export default function ProductsScreen() {
+  const [searchText, setSearchText] = useState('');
+
+  // Optional: Filter your products dynamically based on user typing
+  const filteredProducts = mockProducts.filter(product => 
+    product.name?.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.container}>
         
-        {/* Barra superior fixa amarela limpa */}
-        <View style={styles.header}>
-          {/* Mantido estritamente o título principal em branco */}
-          <Text style={styles.title}>Pedidos</Text>
-        </View>
+        {/* Replaced old static header with your dynamic OrdersHeader */}
+        <OrdersHeader
+          title="Pedidos"
+          searchText={searchText}
+          onChangeSearch={setSearchText}
+          onFilterPress={() => console.log('Filter icon tapped!')}
+        />
 
-        {/* Quadro central com as bordas arredondadas e fundo creme */}
+        {/* Central panel with rounded borders and cream background */}
         <View style={styles.productsPanel}>
           <ScrollView
             showsVerticalScrollIndicator={false}
             style={styles.productsScroll}
             contentContainerStyle={styles.content}
           >
-            {mockProducts.length > 0 ? (
-              <ProductTable products={mockProducts} />
+            {filteredProducts.length > 0 ? (
+              <ProductTable products={filteredProducts} />
             ) : (
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>Nenhum produto encontrado</Text>
-                <Text style={styles.emptyText}>Os produtos aparecerão aqui.</Text>
+                <Text style={styles.emptyText}>Tente buscar por outro termo.</Text>
               </View>
             )}
           </ScrollView>
@@ -41,32 +52,19 @@ export default function ProductsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFD43A', // Mantém o topo do dispositivo em amarelo
+    backgroundColor: '#F8CF58', // Replaced with Header Yellow matching OrdersHeader
   },
   container: {
     flex: 1,
-    backgroundColor: '#FFD43A', // Fundo amarelo da barra superior
-  },
-  header: {
-    paddingTop: 24,
-    paddingHorizontal: 24,
-    paddingBottom: 48, // Espaço confortável para a sobreposição da borda arredondada
-    alignItems: 'center', // Centraliza o título horizontalmente
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#FFFFFF', // Texto "Produtos" configurado estritamente em branco
+    backgroundColor: '#F8CF58', // Replaced with Header Yellow matching OrdersHeader
   },
   productsPanel: {
     flex: 1,
-    backgroundColor: '#FFF9F1', // Mantém o fundo creme original
+    backgroundColor: '#FFF9F1', // Keeps your original cream color
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36,
     overflow: 'hidden',
-    marginTop: -24, // Sobe o painel para revelar o desenho arredondado no topo
-    zIndex: 1,
-    elevation: 1,
+    marginTop: 12, // Changed from negative margin to positive spacing so search stays visible!
   },
   productsScroll: {
     flex: 1,
