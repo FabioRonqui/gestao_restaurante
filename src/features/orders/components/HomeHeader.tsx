@@ -1,3 +1,4 @@
+// esse é a barra de navegaçao superior do aplicativo.
 
 import { useState } from 'react';
 import {
