@@ -1,3 +1,5 @@
+//esse arquivo é o componente de cabeçalho da tela de pedidos.
+
 import { View, Text, Pressable, TextInput, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
