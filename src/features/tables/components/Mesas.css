@@ -18,7 +18,9 @@
   --mesas-reservada-texto: #854d0e;
 
   box-sizing: border-box;
-  min-height: 100vh;
+  height: 100vh;      /* NOVO: troca o min-height */
+  height: 100dvh;     /* NOVO */
+  overflow-y: auto;   /* NOVO: rolagem própria da tela */
   padding: 32px 20px 48px;
   background: var(--mesas-fundo);
   color: var(--mesas-texto);
@@ -194,4 +196,54 @@
     color: var(--mesas-texto-suave);
     font-size: 0.875rem;
   }
+}
+
+/* ---------- NOVO: mesa inativa e botão de ação ---------- */
+
+.mesas-status--inativa {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+/* Apaga a linha, mas deixa o botão normal para poder reativar */
+.mesas-row--inativa td:not(:last-child) {
+  opacity: 0.55;
+}
+
+.mesas-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid var(--mesas-borda);
+  border-radius: 8px;
+  background: var(--mesas-superficie);
+  color: var(--mesas-texto);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mesas-btn:hover {
+  background: var(--mesas-fundo);
+}
+
+/* ---------- NOVO: rodapé com botão Cadastrar mesa ---------- */
+
+.mesas-footer {
+  max-width: 880px;
+  margin: 24px auto 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mesas-btn--principal {
+  background: var(--mesas-marca);
+  border-color: var(--mesas-marca);
+  color: #ffffff;
+  padding: 10px 20px;
+}
+
+.mesas-btn--principal:hover {
+  background: #0f3f23;
 }
