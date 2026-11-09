@@ -2,18 +2,30 @@
 // Fica acessível na rota /products (o expo-router cria a rota pelo nome da pasta).
 // Visual igual ao da tela de pedidos: fundo creme, título grande e conteúdo em branco.
 import { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { Alert, Modal, Pressable, View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { theme } from '../../constants/theme';
 import { mockProducts, restaurantName } from '../../features/products/data/mockProducts';
+import { formatPrice } from '../../features/products/utils/formatPrice';
 import ProductTable from '../../features/products/components/ProductTable';
 import OrdersHeader from '../../features/orders/components/OrdersHeader';
 
 export default function ProductsScreen() {
   const [searchText, setSearchText] = useState('');
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const filteredProducts = mockProducts.filter((product) =>
     product.name?.toLowerCase().includes(searchText.toLowerCase()),
+  );
+  const selectedProducts = mockProducts.filter((product) => (quantities[product.id] ?? 0) > 0);
+  const itemCount = mockProducts.reduce(
+    (total, product) => total + (quantities[product.id] ?? 0),
+    0,
+  );
+  const subtotalCents = mockProducts.reduce(
+    (total, product) => total + product.priceCents * (quantities[product.id] ?? 0),
+    0,
   );
 
   return (
@@ -40,8 +52,29 @@ export default function ProductsScreen() {
               </Text>
             </View>
 
+            <View style={styles.cartSummary}>
+              <View>
+                <Text style={styles.cartTitle}>Seu pedido</Text>
+                <Text style={styles.cartDetails}>
+                  {itemCount === 0
+                    ? 'Adicione produtos para começar.'
+                    : `${itemCount} ${itemCount === 1 ? 'item' : 'itens'} adicionados`}
+                </Text>
+              </View>
+              <Text style={styles.cartTotal}>{formatPrice(subtotalCents)}</Text>
+            </View>
+
             {filteredProducts.length > 0 ? (
-              <ProductTable products={filteredProducts} />
+              <ProductTable
+                products={filteredProducts}
+                quantities={quantities}
+                onChangeQuantity={(productId, change) =>
+                  setQuantities((current) => ({
+                    ...current,
+                    [productId]: Math.max(0, (current[productId] ?? 0) + change),
+                  }))
+                }
+              />
             ) : (
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>Nenhum produto encontrado</Text>
@@ -49,8 +82,83 @@ export default function ProductsScreen() {
               </View>
             )}
           </ScrollView>
+
+          <View style={styles.orderFooter}>
+            <View>
+              <Text style={styles.footerDetails}>
+                {itemCount} {itemCount === 1 ? 'item' : 'itens'}
+              </Text>
+              <Text style={styles.footerTotal}>{formatPrice(subtotalCents)}</Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setIsConfirmationVisible(true)}
+              disabled={itemCount === 0}
+              style={[styles.sendButton, itemCount === 0 && styles.sendButtonDisabled]}
+            >
+              <Text style={styles.sendButtonText}>Enviar pedido</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isConfirmationVisible}
+        onRequestClose={() => setIsConfirmationVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Confirmar pedido</Text>
+            <Text style={styles.modalSubtitle}>Confira os itens antes de continuar:</Text>
+
+            <ScrollView style={styles.modalItems} showsVerticalScrollIndicator={false}>
+              {selectedProducts.map((product) => (
+                <View key={product.id} style={styles.modalItem}>
+                  <Text style={styles.modalItemName}>
+                    {quantities[product.id]}x {product.name}
+                  </Text>
+                  <Text style={styles.modalItemPrice}>
+                    {formatPrice(product.priceCents * (quantities[product.id] ?? 0))}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+
+            <View style={styles.modalTotalRow}>
+              <Text style={styles.modalTotalLabel}>Total</Text>
+              <Text style={styles.modalTotal}>{formatPrice(subtotalCents)}</Text>
+            </View>
+            <Text style={styles.demoNotice}>
+              Demonstração: esta tela ainda não está conectada ao sistema da cozinha.
+            </Text>
+
+            <View style={styles.modalActions}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setIsConfirmationVisible(false)}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelButtonText}>Voltar</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  setIsConfirmationVisible(false);
+                  Alert.alert(
+                    'Pedido não enviado',
+                    'A integração com o sistema da cozinha ainda precisa ser implementada.',
+                  );
+                }}
+                style={styles.confirmButton}
+              >
+                <Text style={styles.confirmButtonText}>Confirmar</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -83,6 +191,32 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 22,
   },
+  cartSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
+    padding: 16,
+    marginBottom: 18,
+  },
+  cartTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#242424',
+  },
+  cartDetails: {
+    marginTop: 4,
+    fontSize: 13,
+    color: '#777777',
+  },
+  cartTotal: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#F04B1D',
+  },
   restaurant: {
     fontSize: 13,
     fontWeight: '700',
@@ -113,5 +247,141 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 8,
     color: '#777777',
+  },
+  orderFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#EEEEEE',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  footerDetails: {
+    color: '#777777',
+    fontSize: 12,
+  },
+  footerTotal: {
+    marginTop: 2,
+    color: '#242424',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  sendButton: {
+    minHeight: 46,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F04B1D',
+    borderRadius: 24,
+    paddingHorizontal: 22,
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#BDBDBD',
+  },
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    padding: 20,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 480,
+    maxHeight: '80%',
+    alignSelf: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 22,
+  },
+  modalTitle: {
+    color: '#242424',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  modalSubtitle: {
+    marginTop: 6,
+    color: '#777777',
+    fontSize: 14,
+  },
+  modalItems: {
+    marginTop: 16,
+    flexGrow: 0,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
+  },
+  modalItemName: {
+    flex: 1,
+    color: '#242424',
+    fontSize: 14,
+  },
+  modalItemPrice: {
+    color: '#242424',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalTotalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 14,
+  },
+  modalTotalLabel: {
+    color: '#242424',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  modalTotal: {
+    color: '#F04B1D',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  demoNotice: {
+    marginTop: 12,
+    color: '#777777',
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 20,
+  },
+  cancelButton: {
+    minHeight: 42,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 22,
+    paddingHorizontal: 18,
+    backgroundColor: '#F2F2F2',
+  },
+  cancelButtonText: {
+    color: '#555555',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  confirmButton: {
+    minHeight: 42,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 22,
+    paddingHorizontal: 18,
+    backgroundColor: '#F04B1D',
+  },
+  confirmButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
