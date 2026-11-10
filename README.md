@@ -8,7 +8,9 @@ armazenados no MySQL por meio da API Spring Boot.
 
 1. Crie o banco `db_restaurante` no MySQL.
 2. Copie `backend/.env.example` para `backend/.env` e preencha as credenciais
-   locais. O arquivo `.env` é ignorado pelo Git; não coloque senhas no código.
+   locais, inclusive a senha do MySQL. O arquivo `.env` é ignorado pelo Git;
+   não coloque senhas no código. Use `localhost:3306` quando o MySQL e o
+   backend estiverem no mesmo computador.
 3. Inicie a API a partir da raiz do projeto:
 
    ```powershell
@@ -18,9 +20,9 @@ armazenados no MySQL por meio da API Spring Boot.
    A API fica disponível em `http://localhost:8080/api`. Na primeira execução,
    ela cria as tabelas necessárias e insere os produtos de exemplo caso o
    cardápio esteja vazio.
-4. Copie `.env.example` para `.env` na raiz do projeto. Ajuste
-   `EXPO_PUBLIC_API_URL` para o endereço da API acessível pelo dispositivo.
-   Em um celular físico, use o IP local do computador em vez de `localhost`.
+4. No navegador do mesmo computador, a API usa automaticamente o host aberto
+   pelo app. Em um celular físico, defina `EXPO_PUBLIC_API_URL` no `.env` da
+   raiz para `http://<IP-do-computador>:8080/api`.
 5. Inicie o aplicativo com `npm run dev` e abra a tela Cardápio.
 
 ## API

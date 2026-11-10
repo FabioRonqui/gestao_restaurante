@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 
 import { useCart } from '../../features/cart/CartContext';
 import { theme } from '../../constants/theme';
@@ -22,8 +23,16 @@ const CONFIRMATION_MESSAGE =
   'Pedido confirmado, dentro de alguns instantes seu prato será entregue à mesa, bom apetite!!';
 
 export default function OrdersScreen() {
-  const { items, setQuantity, removeProduct, clearCart } = useCart();
-  const [tableNumber, setTableNumber] = useState('1');
+  const {
+    items,
+    setQuantity,
+    removeProduct,
+    clearCart,
+    selectedTableNumber,
+  } = useCart();
+  const [tableNumber, setTableNumber] = useState(
+    String(selectedTableNumber ?? 1),
+  );
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [ordersError, setOrdersError] = useState('');
@@ -31,15 +40,39 @@ export default function OrdersScreen() {
   const [confirmationMessage, setConfirmationMessage] = useState('');
 
   useEffect(() => {
-    getOrders()
-      .then(setOrders)
-      .catch((error: unknown) => {
-        setOrdersError(
-          error instanceof Error ? error.message : 'Não foi possível carregar os pedidos.',
-        );
-      })
-      .finally(() => setLoadingOrders(false));
-  }, []);
+    if (selectedTableNumber !== null) {
+      setTableNumber(String(selectedTableNumber));
+    }
+  }, [selectedTableNumber]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      setLoadingOrders(true);
+      setOrdersError('');
+
+      getOrders()
+        .then((loadedOrders) => {
+          if (active) setOrders(loadedOrders);
+        })
+        .catch((error: unknown) => {
+          if (active) {
+            setOrdersError(
+              error instanceof Error
+                ? error.message
+                : 'Não foi possível carregar os pedidos.',
+            );
+          }
+        })
+        .finally(() => {
+          if (active) setLoadingOrders(false);
+        });
+
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   const totalCents = items.reduce(
     (total, item) => total + item.product.priceCents * item.quantity,
