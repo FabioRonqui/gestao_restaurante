@@ -4,7 +4,7 @@
 // centavos (2590 = R$ 25,90) para evitar erros de arredondamento.
 
 export type Product = {
-  id: string;
+  id: number;
   name: string;
   priceCents: number;
   description: string;

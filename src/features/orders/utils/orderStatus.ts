@@ -1,11 +1,10 @@
-// Esse são os status dos nossos pedidos, vou deixar em ingles mesmo por enquanto.
 import type { OrderStatus } from '../types/order';
 
 export const orderStatusLabels: Record<OrderStatus, string> = {
-  pending: 'Pending confirmation',
-  confirmed: 'Order confirmed',
-  preparing: 'Preparing your food',
-  out_for_delivery: 'On the way',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
+  pending: 'Aguardando confirmação',
+  confirmed: 'Pedido confirmado',
+  preparing: 'Em preparo',
+  out_for_delivery: 'A caminho',
+  delivered: 'Entregue',
+  cancelled: 'Cancelado',
 };

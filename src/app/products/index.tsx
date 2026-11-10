@@ -1,20 +1,51 @@
 // Tela "Produtos" do restaurante Delícias Rápidas.
 // Fica acessível na rota /products (o expo-router cria a rota pelo nome da pasta).
 // Visual igual ao da tela de pedidos: fundo creme, título grande e conteúdo em branco.
-import { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { theme } from '../../constants/theme';
-import { mockProducts, restaurantName } from '../../features/products/data/mockProducts';
+import { useCart } from '../../features/cart/CartContext';
 import ProductTable from '../../features/products/components/ProductTable';
+import { getProducts } from '../../features/products/services/productService';
+import type { Product } from '../../features/products/types/product';
 import OrdersHeader from '../../features/orders/components/OrdersHeader';
 
 export default function ProductsScreen() {
   const [searchText, setSearchText] = useState('');
-  const filteredProducts = mockProducts.filter((product) =>
-    product.name?.toLowerCase().includes(searchText.toLowerCase()),
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { items: cartItems, addProduct } = useCart();
+
+  const loadProducts = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      setProducts(await getProducts());
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Não foi possível carregar o cardápio.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadProducts();
+  }, [loadProducts]);
+
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchText.toLowerCase()),
   );
+  const selectedQuantities: Record<number, number> = {};
+  cartItems.forEach(({ product, quantity }) => {
+    selectedQuantities[product.id] = quantity;
+  });
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -31,17 +62,33 @@ export default function ProductsScreen() {
             contentContainerStyle={styles.content}
           >
             <View style={styles.header}>
-              <Text style={styles.restaurant}>{restaurantName}</Text>
+              <Text style={styles.restaurant}>Delícias Rápidas</Text>
               <Text style={styles.title}>Produtos</Text>
               <Text style={styles.subtitle}>
-                {filteredProducts.length === 1
+                {loading
+                  ? 'Carregando cardápio...'
+                  : filteredProducts.length === 1
                   ? '1 produto no cardápio.'
                   : `${filteredProducts.length} produtos no cardápio.`}
               </Text>
             </View>
 
-            {filteredProducts.length > 0 ? (
-              <ProductTable products={filteredProducts} />
+            {loading ? (
+              <Text style={styles.message}>Carregando produtos...</Text>
+            ) : error ? (
+              <View style={styles.empty}>
+                <Text style={styles.emptyTitle}>Não foi possível carregar o cardápio</Text>
+                <Text style={styles.emptyText}>{error}</Text>
+                <Pressable style={styles.retryButton} onPress={() => void loadProducts()}>
+                  <Text style={styles.retryText}>Tentar novamente</Text>
+                </Pressable>
+              </View>
+            ) : filteredProducts.length > 0 ? (
+              <ProductTable
+                products={filteredProducts}
+                onAddProduct={addProduct}
+                selectedQuantities={selectedQuantities}
+              />
             ) : (
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>Nenhum produto encontrado</Text>
@@ -113,5 +160,21 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 8,
     color: '#777777',
+  },
+  message: {
+    color: '#777777',
+    textAlign: 'center',
+    padding: 28,
+  },
+  retryButton: {
+    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    backgroundColor: theme.colors.primary,
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
 });

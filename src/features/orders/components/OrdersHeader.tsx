@@ -9,6 +9,7 @@ type Props = {
   searchText?: string;
   onChangeSearch?: (text: string) => void;
   onFilterPress?: () => void;
+  showSearch?: boolean;
 };
 
 export default function OrdersHeader({ 
@@ -16,35 +17,43 @@ export default function OrdersHeader({
   onBack, 
   searchText, 
   onChangeSearch, 
-  onFilterPress 
+  onFilterPress,
+  showSearch = true,
 }: Props) {
   return (
     <View style={styles.headerWrapper}>
       {/* Top Navigation Row */}
       <View style={styles.container}>
-        <Pressable onPress={onBack} disabled={!onBack} style={styles.iconButton} accessibilityLabel="Go back">
-          <Ionicons name="chevron-back" size={24} color="#40231F" />
-        </Pressable>
+        {onBack ? (
+          <Pressable onPress={onBack} style={styles.iconButton} accessibilityLabel="Voltar">
+            <Ionicons name="chevron-back" size={24} color="#40231F" />
+          </Pressable>
+        ) : (
+          <View style={styles.iconButton} />
+        )}
         <Text style={styles.title}>{title}</Text>
         <View style={styles.rightSpace} />
       </View>
 
-      {/* Integrated Search Bar Row */}
-      <View style={styles.searchRow}>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#9E9E9E" style={styles.icon} />
-          <TextInput 
-            placeholder="Search" 
-            placeholderTextColor="#9E9E9E" 
-            style={styles.input} 
-            value={searchText}
-            onChangeText={onChangeSearch}
-          />
-          <Pressable onPress={onFilterPress} style={styles.filterButton}>
-            <Ionicons name="options" size={18} color="#FFFFFF" />
-          </Pressable>
+      {showSearch && (
+        <View style={styles.searchRow}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color="#9E9E9E" style={styles.icon} />
+            <TextInput
+              placeholder="Buscar no cardápio"
+              placeholderTextColor="#9E9E9E"
+              style={styles.input}
+              value={searchText}
+              onChangeText={onChangeSearch}
+            />
+            {onFilterPress && (
+              <Pressable onPress={onFilterPress} style={styles.filterButton}>
+                <Ionicons name="options" size={18} color="#FFFFFF" />
+              </Pressable>
+            )}
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }

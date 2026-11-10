@@ -8,7 +8,7 @@ export const restaurantName = 'Delícias Rápidas';
 
 export const mockProducts: Product[] = [
   {
-    id: 'prod-01',
+    id: 1,
     name: 'Hambúrguer Clássico',
     priceCents: 2590,
     description: 'Pão macio, hambúrguer bovino, queijo, alface, tomate e molho da casa.',
@@ -16,7 +16,7 @@ export const mockProducts: Product[] = [
     category: 'Lanches',
   },
   {
-    id: 'prod-02',
+    id: 2,
     name: 'Batata Frita',
     priceCents: 990,
     description: 'Porção de batatas fritas crocantes com sal.',
@@ -24,7 +24,7 @@ export const mockProducts: Product[] = [
     category: 'Acompanhamentos',
   },
   {
-    id: 'prod-03',
+    id: 3,
     name: 'Pizza Margherita',
     priceCents: 4590,
     description: 'Molho de tomate, muçarela, manjericão fresco e azeite.',
@@ -32,7 +32,7 @@ export const mockProducts: Product[] = [
     category: 'Pizzas',
   },
   {
-    id: 'prod-04',
+    id: 4,
     name: 'Salada de Frango',
     priceCents: 2890,
     description: 'Mix de folhas, frango grelhado, tomate cereja e molho de mostarda e mel.',
@@ -40,14 +40,14 @@ export const mockProducts: Product[] = [
     category: 'Saladas',
   },
   {
-    id: 'prod-05',
+    id: 5,
     name: 'Suco de Laranja',
     priceCents: 890,
     description: 'Suco de laranja natural, 400 ml.',
     category: 'Bebidas', // sem imagem de propósito, para testar o quadrado cinza
   },
   {
-    id: 'prod-06',
+    id: 6,
     name: 'Brownie de Chocolate',
     priceCents: 1290,
     description: 'Brownie de chocolate meio amargo servido com sorvete de creme.',

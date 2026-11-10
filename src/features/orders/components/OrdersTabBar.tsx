@@ -3,6 +3,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useCart } from '../../cart/CartContext';
 
 type TabRoute = '/' | '/products' | '/orders';
 
@@ -25,6 +26,8 @@ type Props = {
 };
 
 export default function OrdersTabBar({ activeTab }: Props) {
+  const { itemCount } = useCart();
+
   return (
     <View style={styles.tabBar}>
       {tabs.map((tab) => {
@@ -47,11 +50,20 @@ export default function OrdersTabBar({ activeTab }: Props) {
               disabled: !tab.route || active,
             }}
           >
-            <Feather
-              name={tab.icon}
-              size={23}
-              color={active ? '#FFFFFF' : '#FFD3C2'}
-            />
+            <View style={styles.iconContainer}>
+              <Feather
+                name={tab.icon}
+                size={23}
+                color={active ? '#FFFFFF' : '#FFD3C2'}
+              />
+              {tab.label === 'Orders' && itemCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {itemCount > 99 ? '99+' : itemCount}
+                  </Text>
+                </View>
+              )}
+            </View>
 
             <Text style={[styles.label, active && styles.activeLabel]}>
               {tab.label}
@@ -87,6 +99,26 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#FFD3C2',
     fontWeight: '500',
+  },
+  iconContainer: {
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -9,
+    right: -14,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    backgroundColor: '#40231F',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
   activeLabel: {
     color: '#FFFFFF',

@@ -4,7 +4,13 @@
 // - Tela larga (computador/tablet): tabela de verdade, com cabeçalho e colunas.
 // - Tela estreita (celular): cada linha vira um bloco, com o nome do campo
 //   (Valor, Categoria...) ao lado da informação. Assim nada fica espremido.
-import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+} from 'react-native';
 
 import { theme } from '../../../constants/theme';
 import type { Product } from '../types/product';
@@ -13,12 +19,18 @@ import ProductImage from './ProductImage';
 
 type Props = {
   products: Product[];
+  onAddProduct: (product: Product) => void;
+  selectedQuantities: Record<number, number>;
 };
 
 // A partir desta largura (em pixels) usamos o formato de tabela.
 const TABLE_MIN_WIDTH = 720;
 
-export default function ProductTable({ products }: Props) {
+export default function ProductTable({
+  products,
+  onAddProduct,
+  selectedQuantities,
+}: Props) {
   const { width } = useWindowDimensions();
   const isWide = width >= TABLE_MIN_WIDTH;
 
@@ -31,6 +43,7 @@ export default function ProductTable({ products }: Props) {
           <Text style={[styles.headerText, styles.colDescription]}>Descrição</Text>
           <Text style={[styles.headerText, styles.colImage]}>Imagem</Text>
           <Text style={[styles.headerText, styles.colCategory]}>Categoria</Text>
+          <Text style={[styles.headerText, styles.colAction]}>Pedido</Text>
         </View>
 
         {products.map((product, index) => (
@@ -54,6 +67,20 @@ export default function ProductTable({ products }: Props) {
             </View>
             <View style={styles.colCategory}>
               <Text style={styles.badge}>{product.category}</Text>
+            </View>
+            <View style={styles.colAction}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Adicionar ${product.name} ao pedido`}
+                style={styles.addButton}
+                onPress={() => onAddProduct(product)}
+              >
+                <Text style={styles.addButtonText}>
+                  {selectedQuantities[product.id]
+                    ? `+  ${selectedQuantities[product.id]}x`
+                    : 'Adicionar'}
+                </Text>
+              </Pressable>
             </View>
           </View>
         ))}
@@ -85,6 +112,18 @@ export default function ProductTable({ products }: Props) {
             <Text style={styles.fieldLabel}>Descrição</Text>
             <Text style={styles.description}>{product.description}</Text>
           </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Adicionar ${product.name} ao pedido`}
+            style={styles.addButton}
+            onPress={() => onAddProduct(product)}
+          >
+            <Text style={styles.addButtonText}>
+              {selectedQuantities[product.id]
+                ? `Adicionar mais (${selectedQuantities[product.id]}x)`
+                : 'Adicionar ao pedido'}
+            </Text>
+          </Pressable>
         </View>
       ))}
     </View>
@@ -129,6 +168,7 @@ const styles = StyleSheet.create({
   colDescription: { flex: 3, paddingRight: 12 },
   colImage: { width: 90 },
   colCategory: { flex: 1.5 },
+  colAction: { width: 112, alignItems: 'flex-end' },
 
   // ---------- Textos (usados nos dois formatos) ----------
   name: {
@@ -194,6 +234,19 @@ const styles = StyleSheet.create({
   },
   fieldColumn: {
     gap: 6,
+  },
+  addButton: {
+    alignSelf: 'flex-start',
+    marginTop: 14,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    backgroundColor: '#F4511E',
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   fieldLabel: {
     fontSize: 12,

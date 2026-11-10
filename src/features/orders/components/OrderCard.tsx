@@ -1,8 +1,6 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import {
-  Alert,
-  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -10,6 +8,7 @@ import {
 } from 'react-native';
 
 import type { Order } from '../types/order';
+import { orderStatusLabels } from '../utils/orderStatus';
 
 type OrderCardProps = {
   order: Order;
@@ -22,29 +21,23 @@ export function OrderCard({ order, onPress }: OrderCardProps) {
     0,
   );
 
-  const formattedPrice = `$${(order.totalCents / 100).toFixed(2)}`;
-
-  const formattedDate = new Date(order.createdAt)
-    .toLocaleString('en-US', {
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    })
-    .replace(',', ',');
+  const formattedPrice = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(order.totalCents / 100);
+  const formattedDate = new Date(order.createdAt).toLocaleString('pt-BR');
 
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.imagePlaceholder}>
         <Ionicons name="restaurant-outline" size={32} color="#F4511E" />
-        <Text style={styles.imageLabel}>Food photo</Text>
+        <Text style={styles.imageLabel}>Pedido</Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.topRow}>
           <Text style={styles.restaurantName} numberOfLines={2}>
-            {order.restaurantName}
+            Pedido #{order.id} · Mesa {order.tableNumber}
           </Text>
 
           <Text style={styles.price}>{formattedPrice}</Text>
@@ -60,32 +53,28 @@ export function OrderCard({ order, onPress }: OrderCardProps) {
                 size={16}
                 color="#F4511E"
               />
-              <Text style={styles.status}>Order delivered</Text>
+              <Text style={styles.status}>{orderStatusLabels[order.status]}</Text>
             </View>
           </View>
 
           <Text style={styles.itemCount}>
-            {itemCount} {itemCount === 1 ? 'item' : 'items'}
+            {itemCount} {itemCount === 1 ? 'item' : 'itens'}
           </Text>
         </View>
 
         <View style={styles.actions}>
           <Pressable
             style={styles.reviewButton}
-            onPress={() =>
-              Alert.alert('Leave a review', 'Review feature coming soon.')
-            }
+            onPress={onPress}
           >
-            <Text style={styles.reviewText}>Leave a review</Text>
+            <Text style={styles.reviewText}>Ver pedido</Text>
           </Pressable>
 
           <Pressable
             style={styles.orderAgainButton}
-            onPress={() =>
-              Alert.alert('Order Again', 'Reordering will be available soon.')
-            }
+            onPress={onPress}
           >
-            <Text style={styles.orderAgainText}>Order Again</Text>
+            <Text style={styles.orderAgainText}>Atualizar</Text>
           </Pressable>
         </View>
       </View>
