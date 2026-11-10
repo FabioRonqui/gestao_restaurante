@@ -20,9 +20,13 @@ armazenados no MySQL por meio da API Spring Boot.
    A API fica disponível em `http://localhost:8080/api`. Na primeira execução,
    ela cria as tabelas necessárias e insere os produtos de exemplo caso o
    cardápio esteja vazio.
-4. No navegador do mesmo computador, a API usa automaticamente o host aberto
-   pelo app. Em um celular físico, defina `EXPO_PUBLIC_API_URL` no `.env` da
-   raiz para `http://<IP-do-computador>:8080/api`.
+4. Copie `.env.example` para `.env` na raiz. Configure
+   `EXPO_PUBLIC_API_URL=http://<IP-do-computador-que-roda-o-backend>:8080/api`.
+   O backend escuta na rede local (`0.0.0.0:8080`), mas o MySQL permanece
+   acessível somente pelo backend em `localhost:3306`. Cada colega precisa
+   estar na mesma rede local, usar o IP correto e liberar a porta 8080 no
+   firewall privado do computador do backend. Não exponha essa API sem
+   autenticação diretamente à internet.
 5. Inicie o aplicativo com `npm run dev` e abra a tela Cardápio.
 
 ## API
