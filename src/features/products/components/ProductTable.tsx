@@ -4,6 +4,7 @@
 // - Tela larga (computador/tablet): tabela de verdade, com cabeçalho e colunas.
 // - Tela estreita (celular): cada linha vira um bloco, com o nome do campo
 //   (Valor, Categoria...) ao lado da informação. Assim nada fica espremido.
+<<<<<<< HEAD
 import {
   View,
   Text,
@@ -11,6 +12,9 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
+=======
+import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
+>>>>>>> 6f2239183ade019a394e8baa28e54ff89f204da4
 
 import { theme } from '../../../constants/theme';
 import type { Product } from '../types/product';
@@ -19,8 +23,13 @@ import ProductImage from './ProductImage';
 
 type Props = {
   products: Product[];
+<<<<<<< HEAD
   onAddProduct: (product: Product) => void;
   selectedQuantities: Record<number, number>;
+=======
+  quantities?: Record<string, number>;
+  onChangeQuantity?: (productId: string, change: number) => void;
+>>>>>>> 6f2239183ade019a394e8baa28e54ff89f204da4
 };
 
 // A partir desta largura (em pixels) usamos o formato de tabela.
@@ -28,8 +37,13 @@ const TABLE_MIN_WIDTH = 720;
 
 export default function ProductTable({
   products,
+<<<<<<< HEAD
   onAddProduct,
   selectedQuantities,
+=======
+  quantities = {},
+  onChangeQuantity,
+>>>>>>> 6f2239183ade019a394e8baa28e54ff89f204da4
 }: Props) {
   const { width } = useWindowDimensions();
   const isWide = width >= TABLE_MIN_WIDTH;
@@ -43,7 +57,13 @@ export default function ProductTable({
           <Text style={[styles.headerText, styles.colDescription]}>Descrição</Text>
           <Text style={[styles.headerText, styles.colImage]}>Imagem</Text>
           <Text style={[styles.headerText, styles.colCategory]}>Categoria</Text>
+<<<<<<< HEAD
           <Text style={[styles.headerText, styles.colAction]}>Pedido</Text>
+=======
+          {onChangeQuantity && (
+            <Text style={[styles.headerText, styles.colOrder]}>Pedido</Text>
+          )}
+>>>>>>> 6f2239183ade019a394e8baa28e54ff89f204da4
         </View>
 
         {products.map((product, index) => (
@@ -68,6 +88,7 @@ export default function ProductTable({
             <View style={styles.colCategory}>
               <Text style={styles.badge}>{product.category}</Text>
             </View>
+<<<<<<< HEAD
             <View style={styles.colAction}>
               <Pressable
                 accessibilityRole="button"
@@ -82,6 +103,17 @@ export default function ProductTable({
                 </Text>
               </Pressable>
             </View>
+=======
+            {onChangeQuantity && (
+              <View style={styles.colOrder}>
+                <QuantityControl
+                  productName={product.name}
+                  quantity={quantities[product.id] ?? 0}
+                  onChange={(change) => onChangeQuantity(product.id, change)}
+                />
+              </View>
+            )}
+>>>>>>> 6f2239183ade019a394e8baa28e54ff89f204da4
           </View>
         ))}
       </View>
@@ -112,6 +144,7 @@ export default function ProductTable({
             <Text style={styles.fieldLabel}>Descrição</Text>
             <Text style={styles.description}>{product.description}</Text>
           </View>
+<<<<<<< HEAD
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`Adicionar ${product.name} ao pedido`}
@@ -124,8 +157,64 @@ export default function ProductTable({
                 : 'Adicionar ao pedido'}
             </Text>
           </Pressable>
+=======
+
+          {onChangeQuantity && (
+            <View style={styles.orderField}>
+              <Text style={styles.fieldLabel}>Adicionar ao pedido</Text>
+              <QuantityControl
+                productName={product.name}
+                quantity={quantities[product.id] ?? 0}
+                onChange={(change) => onChangeQuantity(product.id, change)}
+              />
+            </View>
+          )}
+>>>>>>> 6f2239183ade019a394e8baa28e54ff89f204da4
         </View>
       ))}
+    </View>
+  );
+}
+
+type QuantityControlProps = {
+  productName: string;
+  quantity: number;
+  onChange: (change: number) => void;
+};
+
+function QuantityControl({ productName, quantity, onChange }: QuantityControlProps) {
+  if (quantity === 0) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Adicionar ${productName} ao pedido`}
+        onPress={() => onChange(1)}
+        style={styles.addButton}
+      >
+        <Text style={styles.addButtonText}>+ Adicionar</Text>
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={styles.quantityControl}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Remover uma unidade de ${productName}`}
+        onPress={() => onChange(-1)}
+        style={styles.quantityButton}
+      >
+        <Text style={styles.quantityButtonText}>-</Text>
+      </Pressable>
+      <Text style={styles.quantity}>{quantity}</Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Adicionar uma unidade de ${productName}`}
+        onPress={() => onChange(1)}
+        style={styles.quantityButton}
+      >
+        <Text style={styles.quantityButtonText}>+</Text>
+      </Pressable>
     </View>
   );
 }
@@ -168,7 +257,11 @@ const styles = StyleSheet.create({
   colDescription: { flex: 3, paddingRight: 12 },
   colImage: { width: 90 },
   colCategory: { flex: 1.5 },
+<<<<<<< HEAD
   colAction: { width: 112, alignItems: 'flex-end' },
+=======
+  colOrder: { width: 124 },
+>>>>>>> 6f2239183ade019a394e8baa28e54ff89f204da4
 
   // ---------- Textos (usados nos dois formatos) ----------
   name: {
@@ -235,6 +328,7 @@ const styles = StyleSheet.create({
   fieldColumn: {
     gap: 6,
   },
+<<<<<<< HEAD
   addButton: {
     alignSelf: 'flex-start',
     marginTop: 14,
@@ -242,12 +336,57 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 20,
     backgroundColor: '#F4511E',
+=======
+  orderField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 16,
+  },
+  addButton: {
+    minHeight: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F04B1D',
+    borderRadius: theme.radius.round,
+    paddingHorizontal: 12,
+>>>>>>> 6f2239183ade019a394e8baa28e54ff89f204da4
   },
   addButtonText: {
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
   },
+<<<<<<< HEAD
+=======
+  quantityControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  quantityButton: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FDEBE5',
+    borderRadius: theme.radius.round,
+  },
+  quantityButtonText: {
+    color: '#E94E1B',
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 24,
+  },
+  quantity: {
+    minWidth: 18,
+    textAlign: 'center',
+    color: '#242424',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+>>>>>>> 6f2239183ade019a394e8baa28e54ff89f204da4
   fieldLabel: {
     fontSize: 12,
     fontWeight: '600',
