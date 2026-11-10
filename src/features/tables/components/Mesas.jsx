@@ -1,6 +1,6 @@
-import { useState } from 'react'; // NOVO
+import { useEffect, useState } from 'react'; // NOVO
 import { UtensilsCrossed, Users, Power, Plus } from 'lucide-react'; // NOVO: Power e Plus
-import { MESAS_MOCK } from '../data/mesasMock';
+import { loadMesas } from '../data/mesasStorage';
 import './Mesas.css';
 
 const STATUS = {
@@ -11,10 +11,30 @@ const STATUS = {
 };
 
 export default function Mesas() {
-  // NOVO: copia a lista do mock e coloca a etiqueta "ativa: true" em todas
-  const [mesas, setMesas] = useState(
-    MESAS_MOCK.map((mesa) => ({ ...mesa, ativa: true }))
-  );
+  const [mesas, setMesas] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadMesas()
+      .then((storedMesas) => {
+        if (isMounted) {
+          setMesas(storedMesas);
+        }
+      })
+      .catch((error) => {
+        console.error('Não foi possível carregar as mesas.', error);
+        alert(
+          error instanceof Error
+            ? `Não foi possível carregar as mesas. ${error.message}`
+            : 'Não foi possível carregar as mesas.',
+        );
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // NOVO: troca ativa <-> inativa só da mesa clicada
   function alternarAtiva(id) {
