@@ -47,7 +47,7 @@ export default function Mesas() {
               <th scope="col">Número da mesa</th>
               <th scope="col">Quantidade de pessoas</th>
               <th scope="col">Status</th>
-              <th scope="col">Ações</th> {/* NOVO */}
+              <th scope="col">Ações</th> 
             </tr>
           </thead>
           <tbody>

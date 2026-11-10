@@ -13,4 +13,10 @@ export const MESAS_MOCK = [
   { id: 8, numero: 8, pessoas: 6, status: 'ocupada' },
   { id: 9, numero: 9, pessoas: 2, status: 'livre' },
   { id: 10, numero: 10, pessoas: 10, status: 'reservada' },
+  { id: 11, numero: 11, pessoas: 4, status: 'livre' },
+  { id: 12, numero: 12, pessoas: 2, status: 'ocupada' },
+  { id: 13, numero: 13, pessoas: 6, status: 'reservada' },
+  { id: 14, numero: 14, pessoas: 4, status: 'livre' },
+  { id: 15, numero: 15, pessoas: 8, status: 'ocupada' },
+  { id: 16, numero: 16, pessoas: 2, status: 'livre' },
 ];
