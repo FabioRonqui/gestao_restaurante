@@ -1,5 +1,21 @@
+import Constants from 'expo-constants';
+
+function getDefaultApiBaseUrl(): string {
+  if (typeof window !== 'undefined' && window.location.hostname) {
+    return `http://${window.location.hostname}:8080/api`;
+  }
+
+  const metroHost = Constants.expoConfig?.hostUri;
+  if (metroHost) {
+    const host = new URL(`http://${metroHost}`).hostname;
+    return `http://${host}:8080/api`;
+  }
+
+  return 'http://localhost:8080/api';
+}
+
 const API_BASE_URL = (
-  process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api'
+  process.env.EXPO_PUBLIC_API_URL ?? getDefaultApiBaseUrl()
 ).replace(/\/+$/, '');
 
 export async function apiRequest<T>(
