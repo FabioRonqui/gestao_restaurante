@@ -1,3 +1,6 @@
+//A maioria dos projetos backend em java tem um service que 
+//é responsável por implementar a lógica de negócio da aplicação.
+
 package gestao_restaurante_backend.order;
 
 import java.time.LocalDateTime;
@@ -28,6 +31,8 @@ public class MesaSessaoService {
 		this.sessions = sessions;
 		this.orders = orders;
 	}
+	// As nossas mesas ficam disponiveis por duas horas se o cliente não finalizar
+	// o pedido, a sessão expira e a mesa volta a ficar livre para outro cliente.
 
 	@Transactional(readOnly = true)
 	public boolean isRegistered(int tableNumber) {

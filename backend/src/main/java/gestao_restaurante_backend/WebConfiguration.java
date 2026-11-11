@@ -1,3 +1,7 @@
+//Arquivo de configurações web, 
+//geralmente usado para liberar acesso externo (CORS)
+// para o frontend, configurar interceptadores ou formatadores.
+
 package gestao_restaurante_backend;
 
 import org.springframework.context.annotation.Configuration;

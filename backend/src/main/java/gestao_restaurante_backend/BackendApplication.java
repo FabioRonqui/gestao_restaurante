@@ -1,3 +1,4 @@
+//classe principal com o método main
 package gestao_restaurante_backend;
 
 import org.springframework.boot.SpringApplication;

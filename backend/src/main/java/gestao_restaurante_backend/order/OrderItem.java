@@ -1,3 +1,5 @@
+//Representa cada item individual dentro de um pedido 
+//(qual produto foi pedido, quantidade e preço unitário no momento da compra)
 package gestao_restaurante_backend.order;
 
 import jakarta.persistence.Column;

@@ -1,3 +1,5 @@
+//Expõe as rotas (URLs) para abrir mesa,
+//consultar consumo da sessão e fechar a conta.
 package gestao_restaurante_backend.order;
 
 import jakarta.validation.Valid;

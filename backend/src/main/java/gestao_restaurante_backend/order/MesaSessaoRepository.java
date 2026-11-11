@@ -1,3 +1,4 @@
+//Executa operações de banco para as sessões das mesas.
 package gestao_restaurante_backend.order;
 
 import java.util.Optional;

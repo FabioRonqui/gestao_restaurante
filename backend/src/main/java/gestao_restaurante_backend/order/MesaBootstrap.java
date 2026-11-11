@@ -1,3 +1,5 @@
+//usada para cadastrar mesas iniciais automaticamente
+//no banco caso ele esteja vazio.
 package gestao_restaurante_backend.order;
 
 import java.util.List;

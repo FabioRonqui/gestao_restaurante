@@ -1,3 +1,6 @@
+//•  Expõe as rotas para criar novos pedidos, 
+//   adicionar itens ou alterar o status do preparo.
+
 package gestao_restaurante_backend.order;
 
 import java.time.LocalDateTime;

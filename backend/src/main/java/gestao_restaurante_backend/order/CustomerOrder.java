@@ -1,3 +1,6 @@
+//Representa o pedido geral feito durante uma sessão da mesa 
+//(data/hora, status do pedido, valor total)
+// é aqui que ele calcula o valor total do pedido, somando os itens.
 package gestao_restaurante_backend.order;
 
 import java.time.LocalDateTime;

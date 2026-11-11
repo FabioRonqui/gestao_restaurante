@@ -1,3 +1,5 @@
+//  Define a mesa física do restaurante
+// (número, status de ocupação, capacidade, etc.
 package gestao_restaurante_backend.order;
 
 import jakarta.persistence.Column;

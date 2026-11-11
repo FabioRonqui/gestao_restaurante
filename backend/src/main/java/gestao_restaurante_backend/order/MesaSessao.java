@@ -1,3 +1,6 @@
+// Representa o atendimento atual de uma mesa. 
+// Permite controlar o histórico de clientes que sentaram ali ao longo do dia
+// sem misturar as contas.
 package gestao_restaurante_backend.order;
 
 import java.time.LocalDateTime;
