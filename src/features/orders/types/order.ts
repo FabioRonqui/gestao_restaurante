@@ -9,6 +9,7 @@ export type OrderStatus =
 export type OrderItem = {
   productId: number;
   name: string;
+  description: string | null;
   quantity: number;
   unitPriceCents: number;
   subtotalCents: number;

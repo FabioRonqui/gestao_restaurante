@@ -14,6 +14,11 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+staff:
+  bootstrap:
+    junior-password: ${STAFF_JUNIOR_PASSWORD:}
+    pleno-password: ${STAFF_PLENO_PASSWORD:}
+    manager-password: ${STAFF_MANAGER_PASSWORD:}
 server:
   port: ${SERVER_PORT:8080}
   address: ${SERVER_ADDRESS:0.0.0.0}

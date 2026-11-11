@@ -2,7 +2,6 @@
 //Aqui é onde editamos a tela para fazer cadastro e login.
 import {
   Alert,
-  Modal,
   View,
   Text,
   TextInput,
@@ -14,7 +13,6 @@ import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { theme } from '../../constants/theme';
 import BrandLogo  from '../../components/ui/BrandLogo';
-import { addMesa } from '../../features/tables/data/mesasStorage';
 import { useCart } from '../../features/cart/CartContext';
 import {
   getTableAvailability,
@@ -25,8 +23,6 @@ import {
 //E quando o import busca apenas um arquivo, ele não usa chaves.
 export default function WelcomeScreen() {
   const [tableNumber, setTableNumber] = useState('');
-  const [isAddTableModalVisible, setIsAddTableModalVisible] = useState(false);
-  const [isAddingTable, setIsAddingTable] = useState(false);
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [isTableRegistered, setIsTableRegistered] = useState<boolean | null>(null);
@@ -162,40 +158,6 @@ export default function WelcomeScreen() {
     }
   };
 
-  const requestAddTable = () => {
-    if (!isTableNumberValid) {
-      Alert.alert('Número da mesa inválido', 'Informe um número de mesa válido para adicionar.');
-      return;
-    }
-
-    setIsAddTableModalVisible(true);
-  };
-
-  const confirmAddTable = async () => {
-    setIsAddingTable(true);
-
-    try {
-      const added = await addMesa(Number(tableNumber));
-      setIsAddTableModalVisible(false);
-
-      if (!added) {
-        Alert.alert('Mesa já cadastrada', `A mesa ${tableNumber} já existe.`);
-        return;
-      }
-
-      setAvailabilityRetry((retry) => retry + 1);
-      Alert.alert('Mesa adicionada', `A mesa ${tableNumber} foi adicionada à tela de mesas.`);
-    } catch (error) {
-      console.error('Não foi possível salvar a mesa.', error);
-      Alert.alert(
-        'Erro ao adicionar mesa',
-        error instanceof Error ? error.message : 'Não foi possível salvar a mesa.',
-      );
-    } finally {
-      setIsAddingTable(false);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.brand}>
@@ -207,8 +169,7 @@ export default function WelcomeScreen() {
             A fome bateu? A gente resolve!
         </Text>
 
-        <View style={styles.tableInputRow}>
-          <TextInput
+        <TextInput
             accessibilityLabel="Número da mesa"
             style={styles.tableInput}
             value={tableNumber}
@@ -221,15 +182,6 @@ export default function WelcomeScreen() {
             placeholderTextColor="#777777"
             keyboardType="number-pad"
           />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Adicionar mesa"
-            style={styles.incrementButton}
-            onPress={requestAddTable}
-          >
-            <Text style={styles.incrementButtonText}>+</Text>
-          </Pressable>
-        </View>
 
         {tableSessionError ? (
           <View style={styles.availabilityError}>
@@ -251,7 +203,7 @@ export default function WelcomeScreen() {
           </Text>
         ) : isTableRegistered === false ? (
           <Text style={styles.availabilityMessage}>
-            Mesa não cadastrada. Use o botão + para cadastrá-la.
+            Mesa não cadastrada. Solicite o cadastro à equipe do restaurante.
           </Text>
         ) : isTableAvailable === false ? (
           <Animated.View
@@ -340,45 +292,6 @@ export default function WelcomeScreen() {
         </Pressable>
       </View>
 
-      <Modal
-        animationType="fade"
-        transparent
-        visible={isAddTableModalVisible}
-        onRequestClose={() => {
-          if (!isAddingTable) {
-            setIsAddTableModalVisible(false);
-          }
-        }}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Adicionar mesa</Text>
-            <Text style={styles.modalMessage}>
-              Deseja realmente adicionar a mesa {tableNumber}?
-            </Text>
-            <View style={styles.modalActions}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={isAddingTable}
-                onPress={() => setIsAddTableModalVisible(false)}
-                style={[styles.modalButton, styles.cancelButton]}
-              >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                disabled={isAddingTable}
-                onPress={confirmAddTable}
-                style={[styles.modalButton, styles.confirmButton]}
-              >
-                <Text style={styles.confirmButtonText}>
-                  {isAddingTable ? 'Adicionando...' : 'Confirmar'}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -408,31 +321,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  tableInputRow: {
-    flexDirection: 'row',
-    width: '100%',
-    gap: 8,
-  },
   tableInput: {
-    flex: 1,
+    width: '100%',
     backgroundColor: theme.colors.background,
     borderRadius: 24,
     paddingHorizontal: 18,
     paddingVertical: 12,
     fontSize: 16,
     textAlign: 'center',
-  },
-  incrementButton: {
-    width: 48,
-    backgroundColor: theme.colors.background,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  incrementButtonText: {
-    color: theme.colors.buttonText,
-    fontSize: 24,
-    fontWeight: '500',
   },
   button: {
     width: '100%',
@@ -494,59 +390,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '500',
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: 380,
-    padding: 24,
-    borderRadius: 20,
-    backgroundColor: theme.colors.background,
-  },
-  modalTitle: {
-    color: theme.colors.buttonText,
-    fontSize: 20,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  modalMessage: {
-    color: theme.colors.buttonText,
-    fontSize: 16,
-    marginTop: 12,
-    textAlign: 'center',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-    marginTop: 24,
-  },
-  modalButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  cancelButton: {
-    backgroundColor: '#E8E8E8',
-  },
-  confirmButton: {
-    backgroundColor: theme.colors.primary,
-  },
-  cancelButtonText: {
-    color: theme.colors.buttonText,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  confirmButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

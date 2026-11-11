@@ -29,7 +29,11 @@ export default function Layout() {
           tabBar={(props) => {
             const currentRoute = props.state.routes[props.state.index].name;
 
-            if (currentRoute === 'index' || currentRoute === '(auth)') {
+            if (
+              currentRoute === 'index' ||
+              currentRoute === '(auth)' ||
+              currentRoute.startsWith('staff')
+            ) {
               return null;
             }
 
@@ -40,6 +44,10 @@ export default function Layout() {
           <Tabs.Screen name="(auth)" options={{ href: null }} />
           <Tabs.Screen name="products" />
           <Tabs.Screen name="orders" />
+          <Tabs.Screen name="staff" options={{ href: null }} />
+          <Tabs.Screen name="staff-junior" options={{ href: null }} />
+          <Tabs.Screen name="staff-pleno" options={{ href: null }} />
+          <Tabs.Screen name="staff-manager" options={{ href: null }} />
         </Tabs>
       </CartProvider>
     </SafeAreaProvider>

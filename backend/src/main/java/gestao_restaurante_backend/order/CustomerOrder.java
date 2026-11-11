@@ -45,8 +45,15 @@ public class CustomerOrder {
 
 	public CustomerOrder(Mesa table) {
 		this.table = table;
-		this.statusCode = 1;
+		this.statusCode = 0;
 		this.createdAt = LocalDateTime.now();
+	}
+
+	public void confirmPayment() {
+		if (statusCode != 0) {
+			throw new IllegalStateException("Somente pedidos pendentes podem ter o pagamento confirmado.");
+		}
+		statusCode = 1;
 	}
 
 	public void addItem(OrderItem item) {

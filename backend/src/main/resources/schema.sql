@@ -7,3 +7,11 @@ CREATE TABLE IF NOT EXISTS mesa_sessoes (
     FOREIGN KEY (numero_mesa) REFERENCES mesa (numero_mesa)
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS funcionarios (
+  re VARCHAR(6) NOT NULL,
+  nome VARCHAR(100) NOT NULL,
+  senha_hash VARCHAR(128) NOT NULL,
+  privilegio VARCHAR(10) NOT NULL,
+  PRIMARY KEY (re)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

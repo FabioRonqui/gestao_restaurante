@@ -56,6 +56,10 @@ public class OrderItem {
 		return product.getName();
 	}
 
+	public String getDescription() {
+		return product.getDescription();
+	}
+
 	public int getQuantity() {
 		return quantity;
 	}

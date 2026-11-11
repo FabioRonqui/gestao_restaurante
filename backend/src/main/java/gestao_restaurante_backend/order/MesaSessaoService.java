@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class MesaSessaoService {
 
-	private static final long SESSION_HOURS = 2;
+	static final long SESSION_HOURS = 2;
 
 	private final MesaRepository mesas;
 	private final MesaSessaoRepository sessions;
@@ -31,8 +31,8 @@ public class MesaSessaoService {
 		this.sessions = sessions;
 		this.orders = orders;
 	}
-	// As nossas mesas ficam disponiveis por duas horas se o cliente não finalizar
-	// o pedido, a sessão expira e a mesa volta a ficar livre para outro cliente.
+	// A reserva e os pedidos pendentes mantêm a mesa ocupada por até duas horas
+	// sem atividade; a confirmação do pagamento ou a saída libera a mesa antes.
 
 	@Transactional(readOnly = true)
 	public boolean isRegistered(int tableNumber) {
@@ -41,18 +41,17 @@ public class MesaSessaoService {
 
 	@Transactional(readOnly = true)
 	public boolean isAvailable(int tableNumber, String token) {
+		LocalDateTime now = LocalDateTime.now();
 		return sessions.findById(tableNumber)
-				.map(session -> !session.getExpiresAt().isAfter(LocalDateTime.now())
-						|| session.getToken().equals(token))
+				.map(session -> session.getToken().equals(token) || !isOccupied(session, now))
 				.orElse(true);
 	}
 
 	@Transactional(readOnly = true)
 	public TableListResponse listTables() {
-		List<MesaSessao> activeSessions = sessions.findAll().stream()
-				.filter(session -> session.getExpiresAt().isAfter(LocalDateTime.now()))
-				.toList();
-		Set<Integer> occupiedTableNumbers = activeSessions.stream()
+		LocalDateTime now = LocalDateTime.now();
+		Set<Integer> occupiedTableNumbers = sessions.findAll().stream()
+				.filter(session -> isOccupied(session, now))
 				.map(MesaSessao::getTableNumber)
 				.collect(Collectors.toSet());
 		List<TableResponse> tableList = mesas.findAllByOrderByTableNumberAsc().stream()
@@ -79,8 +78,11 @@ public class MesaSessaoService {
 		LocalDateTime now = LocalDateTime.now();
 		MesaSessao session = sessions.findByTableNumberForUpdate(tableNumber).orElse(null);
 
-		if (session != null && session.getExpiresAt().isAfter(now)) {
+		if (session != null && isOccupied(session, now)) {
 			if (session.getToken().equals(existingToken)) {
+				if (!session.getExpiresAt().isAfter(now)) {
+					session.renew(existingToken, now.plusHours(SESSION_HOURS));
+				}
 				return new SessionResponse(tableNumber, session.getToken(), session.getExpiresAt());
 			}
 			throw new ResponseStatusException(
@@ -114,14 +116,36 @@ public class MesaSessaoService {
 		sessions.delete(session);
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	public void requireActiveSession(int tableNumber, String token) {
-		MesaSessao session = sessions.findById(tableNumber)
-				.filter(current -> current.getExpiresAt().isAfter(LocalDateTime.now()))
+		LocalDateTime now = LocalDateTime.now();
+		MesaSessao session = sessions.findByTableNumberForUpdate(tableNumber)
 				.filter(current -> current.getToken().equals(token))
+				.filter(current -> current.getExpiresAt().isAfter(now)
+						|| orders.existsByTable_TableNumberAndStatusCodeAndCreatedAtAfter(
+								tableNumber, 0, now.minusHours(SESSION_HOURS)))
 				.orElseThrow(() -> new ResponseStatusException(
 						HttpStatus.FORBIDDEN,
 						"A sessão da mesa expirou ou foi encerrada. Volte ao início e selecione a mesa novamente."));
+		session.renew(token, now.plusHours(SESSION_HOURS));
+	}
+
+	@Transactional
+	public void releaseIfNoRecentPendingOrders(int tableNumber) {
+		LocalDateTime activityCutoff = LocalDateTime.now().minusHours(SESSION_HOURS);
+		boolean hasRecentPendingOrder = orders.existsByTable_TableNumberAndStatusCodeAndCreatedAtAfter(
+				tableNumber, 0, activityCutoff);
+		if (!hasRecentPendingOrder) {
+			sessions.findByTableNumberForUpdate(tableNumber).ifPresent(sessions::delete);
+		}
+	}
+
+	private boolean isOccupied(MesaSessao session, LocalDateTime now) {
+		if (session.getExpiresAt().isAfter(now)) {
+			return true;
+		}
+		return orders.existsByTable_TableNumberAndStatusCodeAndCreatedAtAfter(
+				session.getTableNumber(), 0, now.minusHours(SESSION_HOURS));
 	}
 
 	public record SessionResponse(int tableNumber, String token, LocalDateTime expiresAt) {

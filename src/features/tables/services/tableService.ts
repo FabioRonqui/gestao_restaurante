@@ -14,10 +14,3 @@ export type TableListResponse = {
 export function getTables(): Promise<TableListResponse> {
   return apiRequest<TableListResponse>('/tables');
 }
-
-export function registerTable(numero: number, pessoas = 2): Promise<{ cadastrada: boolean }> {
-  return apiRequest<{ cadastrada: boolean }>('/tables', {
-    method: 'POST',
-    body: JSON.stringify({ numero, pessoas }),
-  });
-}

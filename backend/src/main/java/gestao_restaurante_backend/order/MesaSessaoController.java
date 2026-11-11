@@ -14,15 +14,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestHeader;
+
+import gestao_restaurante_backend.staff.StaffAuthService;
+import gestao_restaurante_backend.staff.StaffRole;
 
 @RestController
 @RequestMapping("/api/tables")
 public class MesaSessaoController {
 
 	private final MesaSessaoService sessions;
+	private final StaffAuthService staffAuth;
 
-	public MesaSessaoController(MesaSessaoService sessions) {
+	public MesaSessaoController(MesaSessaoService sessions, StaffAuthService staffAuth) {
 		this.sessions = sessions;
+		this.staffAuth = staffAuth;
 	}
 
 	@GetMapping
@@ -45,7 +51,9 @@ public class MesaSessaoController {
 
 	@PostMapping
 	public MesaSessaoService.RegistrationResponse register(
+			@RequestHeader("X-Staff-Token") String token,
 			@Valid @RequestBody RegisterTableRequest request) {
+		staffAuth.requireAtLeast(token, StaffRole.PLENO);
 		return sessions.register(request.numero(), request.pessoas());
 	}
 

@@ -8,6 +8,7 @@ export const mockOrders: Order[] = [
       {
         productId: 1,
         name: 'Hambúrguer Clássico',
+        description: null,
         quantity: 2,
         unitPriceCents: 2590,
         subtotalCents: 5180,
@@ -24,6 +25,7 @@ export const mockOrders: Order[] = [
       {
         productId: 2,
         name: 'Batata Frita',
+        description: null,
         quantity: 2,
         unitPriceCents: 990,
         subtotalCents: 1980,

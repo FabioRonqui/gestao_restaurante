@@ -145,7 +145,9 @@ export default function OrdersScreen() {
           <ScrollView contentContainerStyle={styles.content}>
             <Text style={styles.heading}>Seu pedido</Text>
             <Text style={styles.subtitle}>
-              Ajuste as quantidades ou confirme para enviar à cozinha.
+              {items.length > 0
+                ? 'Ajuste as quantidades ou confirme para enviar à cozinha.'
+                : 'Os pedidos enviados para esta mesa aparecem no histórico abaixo.'}
             </Text>
 
             {confirmationMessage ? (
@@ -155,12 +157,16 @@ export default function OrdersScreen() {
             ) : null}
 
             {items.length === 0 ? (
-              <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>Nenhum prato selecionado</Text>
-                <Text style={styles.subtitle}>
-                  Acesse o cardápio e toque em “Adicionar ao pedido”.
-                </Text>
-              </View>
+              loadingOrders ? (
+                <Text style={styles.subtitle}>Verificando pedidos desta mesa...</Text>
+              ) : orders.length === 0 && !ordersError ? (
+                <View style={styles.empty}>
+                  <Text style={styles.emptyTitle}>Nenhum prato selecionado</Text>
+                  <Text style={styles.subtitle}>
+                    Acesse o cardápio e toque em “Adicionar ao pedido”.
+                  </Text>
+                </View>
+              ) : null
             ) : (
               <>
                 {items.map(({ product, quantity }) => (

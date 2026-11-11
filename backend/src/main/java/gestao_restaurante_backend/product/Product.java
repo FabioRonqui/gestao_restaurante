@@ -40,6 +40,13 @@ public class Product {
 	protected Product() {
 	}
 
+	public Product(String name, long priceCents, String description, String imageUrl) {
+		this.name = name;
+		this.price = BigDecimal.valueOf(priceCents, 2);
+		this.description = description;
+		this.imageUrl = imageUrl;
+	}
+
 	public Integer getId() {
 		return id;
 	}
