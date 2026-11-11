@@ -32,7 +32,8 @@ public class MesaSessaoController {
 	public AvailabilityResponse availability(
 			@PathVariable @Min(1) int tableNumber,
 			@RequestParam(required = false) String token) {
-		return new AvailabilityResponse(sessions.isAvailable(tableNumber, token));
+		boolean registered = sessions.isRegistered(tableNumber);
+		return new AvailabilityResponse(registered, registered && sessions.isAvailable(tableNumber, token));
 	}
 
 	@PostMapping("/session")
@@ -64,7 +65,7 @@ public class MesaSessaoController {
 			@NotNull @Min(1) Integer pessoas) {
 	}
 
-	public record AvailabilityResponse(boolean available) {
+	public record AvailabilityResponse(boolean registered, boolean available) {
 	}
 
 	public record ReleaseResponse(boolean released) {

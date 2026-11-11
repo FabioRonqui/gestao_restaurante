@@ -30,6 +30,11 @@ public class MesaSessaoService {
 	}
 
 	@Transactional(readOnly = true)
+	public boolean isRegistered(int tableNumber) {
+		return mesas.existsById(tableNumber);
+	}
+
+	@Transactional(readOnly = true)
 	public boolean isAvailable(int tableNumber, String token) {
 		return sessions.findById(tableNumber)
 				.map(session -> !session.getExpiresAt().isAfter(LocalDateTime.now())
@@ -56,17 +61,16 @@ public class MesaSessaoService {
 
 	@Transactional
 	public RegistrationResponse register(int tableNumber, int peopleCount) {
-		if (mesas.existsById(tableNumber)) {
-			return new RegistrationResponse(false, tableNumber);
-		}
-		mesas.saveAndFlush(new Mesa(tableNumber, peopleCount));
-		return new RegistrationResponse(true, tableNumber);
+		boolean registered = mesas.insertIfAbsent(tableNumber, peopleCount) == 1;
+		return new RegistrationResponse(registered, tableNumber);
 	}
 
 	@Transactional
 	public SessionResponse start(int tableNumber, String existingToken) {
 		Mesa table = mesas.findByIdForUpdate(tableNumber)
-				.orElseGet(() -> mesas.saveAndFlush(new Mesa(tableNumber, 2)));
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"Mesa não cadastrada. Cadastre a mesa antes de iniciar o pedido."));
 		LocalDateTime now = LocalDateTime.now();
 		MesaSessao session = sessions.findByTableNumberForUpdate(tableNumber).orElse(null);
 
@@ -93,9 +97,15 @@ public class MesaSessaoService {
 
 	@Transactional
 	public void release(int tableNumber, String token) {
-		MesaSessao session = sessions.findByTableNumberAndToken(tableNumber, token)
-				.orElseThrow(() -> new ResponseStatusException(
-						HttpStatus.NOT_FOUND, "A sessão desta mesa não está mais ativa."));
+		MesaSessao session = sessions.findByIdForUpdate(tableNumber).orElse(null);
+		if (session == null) {
+			return;
+		}
+		if (!session.getToken().equals(token)) {
+			throw new ResponseStatusException(
+					HttpStatus.FORBIDDEN,
+					"A sessão da mesa pertence a outra pessoa e não pode ser liberada por este acesso.");
+		}
 		sessions.delete(session);
 	}
 

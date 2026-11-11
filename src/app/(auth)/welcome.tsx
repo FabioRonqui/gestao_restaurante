@@ -29,6 +29,7 @@ export default function WelcomeScreen() {
   const [isAddingTable, setIsAddingTable] = useState(false);
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [isTableRegistered, setIsTableRegistered] = useState<boolean | null>(null);
   const [isTableAvailable, setIsTableAvailable] = useState<boolean | null>(null);
   const [availabilityError, setAvailabilityError] = useState('');
   const [availabilityRetry, setAvailabilityRetry] = useState(0);
@@ -37,6 +38,9 @@ export default function WelcomeScreen() {
     clearCart,
     selectedTableNumber,
     tableSessionToken,
+    tableSessionReady,
+    tableSessionError,
+    retryTableSessionRestore,
     setTableSession,
   } = useCart();
   const isTableNumberValid =
@@ -56,8 +60,16 @@ export default function WelcomeScreen() {
   }, [isTableAvailable, unavailableAnimation]);
 
   useEffect(() => {
+    if (!tableSessionReady || tableSessionError) {
+      setIsCheckingAvailability(false);
+      setIsTableAvailable(null);
+      setIsTableRegistered(null);
+      return;
+    }
+
     if (!isTableNumberValid) {
       setIsTableAvailable(null);
+      setIsTableRegistered(null);
       setAvailabilityError('');
       setIsCheckingAvailability(false);
       return;
@@ -65,12 +77,16 @@ export default function WelcomeScreen() {
 
     let active = true;
     setIsCheckingAvailability(true);
+    setIsTableRegistered(null);
     setIsTableAvailable(null);
     setAvailabilityError('');
     const timeout = setTimeout(() => {
       getTableAvailability(Number(tableNumber), tableSessionToken)
-        .then(({ available }) => {
-          if (active) setIsTableAvailable(available);
+        .then(({ registered, available }) => {
+          if (active) {
+            setIsTableRegistered(registered);
+            setIsTableAvailable(available);
+          }
         })
         .catch((error: unknown) => {
           if (active) {
@@ -90,7 +106,14 @@ export default function WelcomeScreen() {
       active = false;
       clearTimeout(timeout);
     };
-  }, [availabilityRetry, isTableNumberValid, tableNumber, tableSessionToken]);
+  }, [
+    availabilityRetry,
+    isTableNumberValid,
+    tableNumber,
+    tableSessionError,
+    tableSessionReady,
+    tableSessionToken,
+  ]);
 
   const openProducts = async () => {
     if (!isTableNumberValid) {
@@ -116,7 +139,7 @@ export default function WelcomeScreen() {
     try {
       const session = await startTableSession(selectedNumber, tableSessionToken);
       if (session.token !== tableSessionToken) clearCart();
-      setTableSession(selectedNumber, session.token);
+      await setTableSession(selectedNumber, session.token);
       router.push({
         pathname: '/products',
         params: { tableNumber },
@@ -160,6 +183,7 @@ export default function WelcomeScreen() {
         return;
       }
 
+      setAvailabilityRetry((retry) => retry + 1);
       Alert.alert('Mesa adicionada', `A mesa ${tableNumber} foi adicionada à tela de mesas.`);
     } catch (error) {
       console.error('Não foi possível salvar a mesa.', error);
@@ -190,6 +214,7 @@ export default function WelcomeScreen() {
             value={tableNumber}
             onChangeText={(value) => {
               setTableNumber(value.replace(/\D/g, ''));
+              setIsTableRegistered(null);
               setIsTableAvailable(null);
             }}
             placeholder="Número da mesa"
@@ -206,9 +231,27 @@ export default function WelcomeScreen() {
           </Pressable>
         </View>
 
-        {isCheckingAvailability ? (
+        {tableSessionError ? (
+          <View style={styles.availabilityError}>
+            <Text accessibilityRole="alert" style={styles.unavailableMessageText}>
+              {tableSessionError}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={retryTableSessionRestore}
+            >
+              <Text style={styles.retryAvailabilityText}>Tentar novamente</Text>
+            </Pressable>
+          </View>
+        ) : !tableSessionReady || isCheckingAvailability ? (
           <Text style={styles.availabilityMessage}>
-            Verificando disponibilidade da mesa...
+            {!tableSessionReady
+              ? 'Restaurando sua sessão...'
+              : 'Verificando disponibilidade da mesa...'}
+          </Text>
+        ) : isTableRegistered === false ? (
+          <Text style={styles.availabilityMessage}>
+            Mesa não cadastrada. Use o botão + para cadastrá-la.
           </Text>
         ) : isTableAvailable === false ? (
           <Animated.View
@@ -253,6 +296,7 @@ export default function WelcomeScreen() {
               !isTableNumberValid ||
               isStartingSession ||
               isCheckingAvailability ||
+              isTableRegistered !== true ||
               isTableAvailable !== true ||
               Boolean(availabilityError),
           }}
@@ -260,6 +304,7 @@ export default function WelcomeScreen() {
             !isTableNumberValid ||
             isStartingSession ||
             isCheckingAvailability ||
+            isTableRegistered !== true ||
             isTableAvailable !== true ||
             Boolean(availabilityError)
           }
@@ -268,6 +313,7 @@ export default function WelcomeScreen() {
             (!isTableNumberValid ||
               isStartingSession ||
               isCheckingAvailability ||
+              isTableRegistered !== true ||
               isTableAvailable !== true ||
               Boolean(availabilityError)) &&
               styles.buttonDisabled,

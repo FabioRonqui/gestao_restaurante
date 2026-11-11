@@ -29,6 +29,8 @@ export default function OrdersScreen() {
     clearCart,
     selectedTableNumber,
     tableSessionToken,
+    tableSessionReady,
+    tableSessionError,
   } = useCart();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -39,6 +41,22 @@ export default function OrdersScreen() {
   useFocusEffect(
     useCallback(() => {
       let active = true;
+      if (!tableSessionReady) {
+        setLoadingOrders(true);
+        return () => {
+          active = false;
+        };
+      }
+
+      if (tableSessionError) {
+        setOrders([]);
+        setOrdersError(tableSessionError);
+        setLoadingOrders(false);
+        return () => {
+          active = false;
+        };
+      }
+
       if (selectedTableNumber === null || tableSessionToken === null) {
         setOrders([]);
         setOrdersError('Selecione uma mesa na tela inicial para consultar os pedidos.');
@@ -71,7 +89,12 @@ export default function OrdersScreen() {
       return () => {
         active = false;
       };
-    }, [selectedTableNumber, tableSessionToken]),
+    }, [
+      selectedTableNumber,
+      tableSessionError,
+      tableSessionReady,
+      tableSessionToken,
+    ]),
   );
 
   const totalCents = items.reduce(

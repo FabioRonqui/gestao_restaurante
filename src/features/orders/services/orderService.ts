@@ -19,9 +19,9 @@ export type TableSession = {
 export function getTableAvailability(
   tableNumber: number,
   token: string | null,
-): Promise<{ available: boolean }> {
+): Promise<{ registered: boolean; available: boolean }> {
   const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
-  return apiRequest<{ available: boolean }>(
+  return apiRequest<{ registered: boolean; available: boolean }>(
     `/tables/${tableNumber}/availability${tokenParam}`,
   );
 }

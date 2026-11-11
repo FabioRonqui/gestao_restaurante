@@ -52,7 +52,7 @@ export default function OrdersTabBar({ activeTab }: Props) {
         await releaseTableSession(selectedTableNumber, tableSessionToken);
       }
       clearCart();
-      clearTableSession();
+      await clearTableSession();
       setExitConfirmationVisible(false);
       router.replace('/welcome');
     } catch (error) {

@@ -59,9 +59,15 @@ armazenados no MySQL por meio da API Spring Boot.
 
 O status numérico em `pedidos.status` é traduzido assim: `0` aguardando
 confirmação, `1` confirmado, `2` em preparo, `3` a caminho, `4` entregue e
-`5` cancelado. A API cria o registro de `mesa` com duas pessoas caso o número
-selecionado ainda não exista. A API também cria a tabela auxiliar `mesa_sessoes`
-caso ela ainda não exista; ela guarda o token de reserva e o horário de expiração.
+`5` cancelado. A mesa precisa estar cadastrada antes de iniciar uma sessão;
+use o botão `+` na tela inicial para cadastrar uma nova. A API também cria a
+tabela auxiliar `mesa_sessoes` caso ela ainda não exista; ela guarda o token
+de reserva e o horário de expiração.
 Na primeira inicialização, as 16 mesas que existiam no cadastro local anterior
 são inseridas em `mesa` caso ainda não estejam cadastradas. Mesas adicionadas
 depois também são persistidas no MySQL.
+
+O número da mesa selecionada e o token da sessão ficam salvos no armazenamento
+local do dispositivo/navegador para que o histórico de pedidos continue acessível
+após atualizar ou reabrir o app. A reserva continua sujeita ao limite de duas
+horas registrado no MySQL.
