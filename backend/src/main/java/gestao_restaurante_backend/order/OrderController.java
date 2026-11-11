@@ -3,6 +3,7 @@
 
 package gestao_restaurante_backend.order;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -62,6 +63,19 @@ public class OrderController {
 				.toList();
 	}
 
+	@GetMapping("/staff/today")
+	@Transactional(readOnly = true)
+	public List<OrderResponse> listTodayOrders(@RequestHeader("X-Staff-Token") String token) {
+		staffAuth.requireAtLeast(token, StaffRole.GERENTE);
+		LocalDate today = LocalDate.now();
+		return orders.findAllByCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByCreatedAtDesc(
+						today.atStartOfDay(),
+						today.plusDays(1).atStartOfDay())
+				.stream()
+				.map(OrderResponse::from)
+				.toList();
+	}
+
 	@PatchMapping("/{orderId}/payment")
 	@Transactional
 	public OrderResponse confirmPayment(
@@ -81,7 +95,7 @@ public class OrderController {
 	}
 
 	@GetMapping
-	@Transactional(readOnly = true)
+	@Transactional
 	public List<OrderResponse> listOrders(
 			@RequestParam @Min(1) int tableNumber,
 			@RequestParam String sessionToken) {

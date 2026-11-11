@@ -86,6 +86,11 @@ class BackendApplicationTests {
 			expireSession(tableNumber);
 
 			assertTrue(availability(tableNumber, "another-session").contains("\"available\":false"));
+			assertEquals(200, request(
+					"GET",
+					"/api/orders?tableNumber=" + tableNumber + "&sessionToken=" + customerToken,
+					null,
+					null).statusCode());
 			assertTrue(request("GET", "/api/tables", null, null).body()
 					.contains("\"numero\":" + tableNumber + ",\"pessoas\":2,\"status\":\"ocupada\""));
 			assertEquals(409, request(
@@ -102,6 +107,11 @@ class BackendApplicationTests {
 					plenoToken,
 					null).statusCode());
 			assertTrue(availability(tableNumber, "another-session").contains("\"available\":true"));
+			assertEquals(403, request(
+					"GET",
+					"/api/orders?tableNumber=" + tableNumber + "&sessionToken=" + customerToken,
+					null,
+					null).statusCode());
 
 			String leavingCustomerToken = startTableSession(tableNumber);
 			addPendingOrder(tableNumber, LocalDateTime.now().minusMinutes(10));
@@ -121,6 +131,35 @@ class BackendApplicationTests {
 					"/api/tables/session",
 					null,
 					"{\"tableNumber\":" + tableNumber + ",\"token\":\"another-session\"}").statusCode());
+		} finally {
+			cleanupTable(tableNumber);
+		}
+	}
+
+	@Test
+	void onlyManagerCanReadTodayTransactions() throws Exception {
+		int tableNumber = 990002;
+		cleanupTable(tableNumber);
+		jdbc.update(
+				"INSERT INTO mesa (numero_mesa, quantidade_pessoas) VALUES (?, 2) "
+						+ "ON DUPLICATE KEY UPDATE quantidade_pessoas = 2",
+				tableNumber);
+
+		try {
+			int todayPendingId = addPendingOrder(tableNumber, LocalDateTime.now().withHour(10));
+			int todayConfirmedId = addPendingOrder(tableNumber, LocalDateTime.now().withHour(11));
+			jdbc.update("UPDATE pedidos SET status = 1 WHERE id = ?", todayConfirmedId);
+			int yesterdayOrderId = addPendingOrder(tableNumber, LocalDateTime.now().minusDays(1));
+
+			String juniorToken = login("000202", juniorPassword);
+			assertEquals(403, request("GET", "/api/orders/staff/today", juniorToken, null).statusCode());
+
+			String managerToken = login("10000", managerPassword);
+			HttpResponse<String> response = request("GET", "/api/orders/staff/today", managerToken, null);
+			assertEquals(200, response.statusCode());
+			assertTrue(response.body().contains("\"id\":" + todayPendingId));
+			assertTrue(response.body().contains("\"id\":" + todayConfirmedId));
+			assertFalse(response.body().contains("\"id\":" + yesterdayOrderId));
 		} finally {
 			cleanupTable(tableNumber);
 		}

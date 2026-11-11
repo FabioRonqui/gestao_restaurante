@@ -6,6 +6,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +18,7 @@ import {
   addStaffProduct,
   confirmOrderPayment,
   getPendingStaffOrders,
+  getTodayStaffOrders,
   getStaffMembers,
   getStaffProducts,
   getStaffTables,
@@ -37,8 +39,36 @@ type StaffDashboardProps = {
   session: StaffSession;
 };
 
+type ManagerView = 'transactions' | 'tables' | 'menu' | 'staff';
+
+const MANAGER_NAV: { key: ManagerView; label: string }[] = [
+  { key: 'transactions', label: 'Transações do dia' },
+  { key: 'tables', label: 'Mesas' },
+  { key: 'menu', label: 'Cardápio' },
+  { key: 'staff', label: 'Funcionários' },
+];
+
+function getOrderStatusLabel(status: StaffOrder['status']) {
+  switch (status) {
+    case 'pending':
+      return 'Aguardando pagamento';
+    case 'cancelled':
+      return 'Cancelado';
+    case 'confirmed':
+      return 'Pagamento confirmado';
+    case 'preparing':
+      return 'Em preparo';
+    case 'out_for_delivery':
+      return 'A caminho da mesa';
+    case 'delivered':
+      return 'Entregue';
+  }
+}
+
 export default function StaffDashboard({ session }: StaffDashboardProps) {
   const [orders, setOrders] = useState<StaffOrder[]>([]);
+  const [todayOrders, setTodayOrders] = useState<StaffOrder[]>([]);
+  const [managerView, setManagerView] = useState<ManagerView>('transactions');
   const [products, setProducts] = useState<Product[]>([]);
   const [productPendingRemoval, setProductPendingRemoval] = useState<Product | null>(null);
   const [tables, setTables] = useState<TableRecord[]>([]);
@@ -59,6 +89,14 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
   const isJunior = session.role === 'JUNIOR';
   const canManage = session.role === 'PLENO' || isManager;
   const canConfirmPayment = canManage;
+  const compactLayout = useWindowDimensions().width < 760;
+  const visibleOrders = isManager ? todayOrders : orders;
+  const confirmedTodayCents = todayOrders
+    .filter((order) => order.status !== 'pending' && order.status !== 'cancelled')
+    .reduce((total, order) => total + order.totalCents, 0);
+  const pendingTodayCents = todayOrders
+    .filter((order) => order.status === 'pending')
+    .reduce((total, order) => total + order.totalCents, 0);
 
   const refresh = useCallback(async (token: string, role: StaffSession['role']) => {
     setLoading(true);
@@ -73,7 +111,12 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
       setTables(tableList.mesas);
       setProducts(productList);
       if (role === 'GERENTE') {
-        setMembers(await getStaffMembers(token));
+        const [staffMembers, dailyOrders] = await Promise.all([
+          getStaffMembers(token),
+          getTodayStaffOrders(token),
+        ]);
+        setMembers(staffMembers);
+        setTodayOrders(dailyOrders);
       }
     } catch (loadError) {
       setError(
@@ -218,25 +261,70 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.page}>
+      <View style={[styles.dashboardShell, isManager && styles.managerShell, isManager && compactLayout && styles.managerShellCompact]}>
+        {isManager ? (
+          <View style={[styles.sidebar, compactLayout && styles.sidebarCompact]}>
+            <View style={styles.sidebarBrand}>
+              <Text style={styles.sidebarEyebrow}>GESTÃO</Text>
+              <Text style={styles.sidebarTitle}>Restaurante</Text>
+              <Text style={styles.sidebarUser}>{session.name} · Gerente</Text>
+            </View>
+            <View style={[styles.sidebarNav, compactLayout && styles.sidebarNavCompact]}>
+              {MANAGER_NAV.map((item) => {
+                const selected = managerView === item.key;
+                return (
+                  <Pressable
+                    key={item.key}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => setManagerView(item.key)}
+                    style={[styles.sidebarItem, selected && styles.sidebarItemSelected, compactLayout && styles.sidebarItemCompact]}
+                  >
+                    <Text style={[styles.sidebarItemText, selected && styles.sidebarItemTextSelected]}>{item.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Pressable accessibilityRole="button" onPress={() => void handleLogout()} style={styles.sidebarLogout}>
+              <Text style={styles.sidebarLogoutText}>Sair da conta</Text>
+            </Pressable>
+          </View>
+        ) : null}
+      <ScrollView style={isManager ? styles.managerMain : undefined} contentContainerStyle={[styles.page, isManager && styles.managerPage]}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.eyebrow}>
-              {isJunior ? 'PAINEL DA COZINHA E SALÃO' : isManager ? 'PAINEL DO GERENTE' : 'PAINEL ADMINISTRATIVO'}
-            </Text>
-            <Text style={styles.title}>Olá, {session.name}</Text>
-            <Text style={styles.role}>{ACCESS_LABELS[session.role]}</Text>
+            <Text style={styles.eyebrow}>{isManager
+              ? MANAGER_NAV.find((item) => item.key === managerView)?.label.toUpperCase()
+              : isJunior ? 'PAINEL DA COZINHA E SALÃO' : 'PAINEL ADMINISTRATIVO'}</Text>
+            <Text style={styles.title}>{isManager
+              ? MANAGER_NAV.find((item) => item.key === managerView)?.label
+              : `Olá, ${session.name}`}</Text>
+            <Text style={styles.role}>{isManager ? `Olá, ${session.name} · Gerente` : ACCESS_LABELS[session.role]}</Text>
           </View>
-          <Pressable accessibilityRole="button" onPress={() => void handleLogout()} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Sair</Text>
-          </Pressable>
+          {!isManager ? (
+            <Pressable accessibilityRole="button" onPress={() => void handleLogout()} style={styles.logoutButton}>
+              <Text style={styles.logoutText}>Sair</Text>
+            </Pressable>
+          ) : null}
         </View>
 
-        <View style={styles.summary}>
+        {(!isManager || managerView === 'transactions') ? <View style={styles.summary}>
           <View>
-            <Text style={styles.summaryLabel}>PEDIDOS PENDENTES</Text>
-            <Text style={styles.summaryCount}>{orders.length}</Text>
+            <Text style={styles.summaryLabel}>{isManager ? 'TRANSAÇÕES DE HOJE' : 'PEDIDOS PENDENTES'}</Text>
+            <Text style={styles.summaryCount}>{isManager ? todayOrders.length : orders.length}</Text>
           </View>
+          {isManager ? (
+            <>
+              <View>
+                <Text style={styles.summaryLabel}>RECEBIDO</Text>
+                <Text style={styles.summaryMetric}>{formatPrice(confirmedTodayCents)}</Text>
+              </View>
+              <View>
+                <Text style={styles.summaryLabel}>AGUARDANDO</Text>
+                <Text style={styles.summaryMetric}>{formatPrice(pendingTodayCents)}</Text>
+              </View>
+            </>
+          ) : null}
           <Pressable
             accessibilityRole="button"
             disabled={loading}
@@ -245,19 +333,19 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
           >
             <Text style={styles.refreshText}>{loading ? 'Atualizando...' : 'Atualizar'}</Text>
           </Pressable>
-        </View>
+        </View> : null}
 
         {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
         {notice ? <Text style={styles.notice}>{notice}</Text> : null}
 
-        {orders.length === 0 && !loading ? (
+        {visibleOrders.length === 0 && !loading && (!isManager || managerView === 'transactions') ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>Nenhum pedido pendente</Text>
-            <Text style={styles.bodyText}>Os novos pedidos aparecem aqui automaticamente.</Text>
+            <Text style={styles.emptyTitle}>{isManager ? 'Nenhuma transação hoje' : 'Nenhum pedido pendente'}</Text>
+            <Text style={styles.bodyText}>{isManager ? 'Os pedidos registrados hoje aparecerão nesta área.' : 'Os novos pedidos aparecem aqui automaticamente.'}</Text>
           </View>
         ) : null}
 
-        {orders.map((order) => (
+        {(!isManager || managerView === 'transactions') && visibleOrders.map((order) => (
           <View key={order.id} style={styles.card}>
             <View style={styles.orderHeader}>
               <Text style={styles.orderTitle}>Pedido #{order.id}</Text>
@@ -272,7 +360,7 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
             ))}
             <View style={styles.orderFooter}>
               <Text style={styles.total}>{formatPrice(order.totalCents)}</Text>
-              {canConfirmPayment ? (
+              {canConfirmPayment && order.status === 'pending' ? (
                 <Pressable
                   accessibilityRole="button"
                   disabled={busyAction}
@@ -281,6 +369,10 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
                 >
                   <Text style={styles.primaryButtonText}>Pagamento recebido</Text>
                 </Pressable>
+              ) : isManager ? (
+                <Text style={order.status === 'pending' ? styles.pendingLabel : styles.confirmedLabel}>
+                  {getOrderStatusLabel(order.status)}
+                </Text>
               ) : (
                 <Text style={styles.pendingLabel}>Aguardando pagamento</Text>
               )}
@@ -288,8 +380,7 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
           </View>
         ))}
 
-        {canManage ? (
-          <>
+        {canManage && (!isManager || managerView === 'tables') ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Mesas</Text>
               <Text style={styles.bodyText}>Cadastro permitido para Pleno e Gerente.</Text>
@@ -316,7 +407,8 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
               </View>
               <Text style={styles.muted}>Cadastradas: {tables.map((table) => table.numero).join(', ') || 'nenhuma'}</Text>
             </View>
-
+        ) : null}
+        {canManage && (!isManager || managerView === 'menu') ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Cardápio</Text>
               <Text style={styles.bodyText}>Pleno pode adicionar; somente o gerente pode remover.</Text>
@@ -364,10 +456,9 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
                 </View>
               )) : null}
             </View>
-          </>
         ) : null}
 
-        {isManager ? (
+        {isManager && managerView === 'staff' ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Funcionários</Text>
             <Text style={styles.bodyText}>Os três últimos dígitos do RE devem começar com 2 (Junior) ou 5 (Pleno).</Text>
@@ -386,22 +477,44 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
           </View>
         ) : null}
       </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F6F4F1' },
+  dashboardShell: { flex: 1 },
+  managerShell: { flexDirection: 'row' },
+  managerShellCompact: { flexDirection: 'column' },
+  sidebar: { width: 240, backgroundColor: '#202020', padding: 20, gap: 24 },
+  sidebarCompact: { width: '100%', padding: 14, gap: 12 },
+  sidebarBrand: { gap: 5 },
+  sidebarEyebrow: { color: '#E9835D', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
+  sidebarTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '800' },
+  sidebarUser: { color: '#C6C1BC', fontSize: 13, marginTop: 4 },
+  sidebarNav: { gap: 8 },
+  sidebarNavCompact: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  sidebarItem: { borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+  sidebarItemCompact: { flexGrow: 1, flexBasis: '45%', paddingHorizontal: 10, paddingVertical: 10 },
+  sidebarItemSelected: { backgroundColor: '#E65B2B' },
+  sidebarItemText: { color: '#D5D0CB', fontSize: 14, fontWeight: '600' },
+  sidebarItemTextSelected: { color: '#FFFFFF', fontWeight: '800' },
+  sidebarLogout: { marginTop: 'auto', borderTopWidth: 1, borderTopColor: '#454545', paddingTop: 16 },
+  sidebarLogoutText: { color: '#FFFFFF', fontWeight: '700', paddingVertical: 8 },
+  managerMain: { flex: 1 },
   page: { width: '100%', maxWidth: 900, alignSelf: 'center', padding: 24, gap: 16 },
+  managerPage: { width: '100%', maxWidth: 1100, padding: 28 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 16 },
   eyebrow: { color: '#E65B2B', fontSize: 12, fontWeight: '700', letterSpacing: 1.4 },
   title: { color: '#202020', fontSize: 28, fontWeight: '800', marginTop: 4 },
   role: { color: '#686868', fontSize: 14, marginTop: 4 },
   logoutButton: { backgroundColor: '#E8E3DE', borderRadius: 18, paddingHorizontal: 18, paddingVertical: 10 },
   logoutText: { color: '#292929', fontWeight: '700' },
-  summary: { backgroundColor: '#202020', borderRadius: 18, padding: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  summary: { backgroundColor: '#202020', borderRadius: 18, padding: 20, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 },
   summaryLabel: { color: '#C6C1BC', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
   summaryCount: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', marginTop: 4 },
+  summaryMetric: { color: '#FFFFFF', fontSize: 19, fontWeight: '800', marginTop: 9 },
   refreshButton: { backgroundColor: '#FFFFFF', borderRadius: 18, paddingHorizontal: 16, paddingVertical: 10 },
   refreshText: { color: '#202020', fontWeight: '700' },
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 18, gap: 8, borderWidth: 1, borderColor: '#EAE6E1' },
@@ -413,6 +526,7 @@ const styles = StyleSheet.create({
   orderFooter: { borderTopWidth: 1, borderTopColor: '#EEEAE6', marginTop: 8, paddingTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   total: { color: '#202020', fontSize: 17, fontWeight: '800' },
   pendingLabel: { color: '#875A13', backgroundColor: '#FFF3D5', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, fontSize: 13, fontWeight: '700' },
+  confirmedLabel: { color: '#195D36', backgroundColor: '#E6F4EA', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, fontSize: 13, fontWeight: '700' },
   primaryButton: { backgroundColor: '#E65B2B', borderRadius: 18, paddingHorizontal: 16, paddingVertical: 11, alignItems: 'center', justifyContent: 'center' },
   primaryButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
   disabled: { opacity: 0.6 },

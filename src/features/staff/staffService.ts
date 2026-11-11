@@ -63,6 +63,12 @@ export function getPendingStaffOrders(token: string): Promise<StaffOrder[]> {
   });
 }
 
+export function getTodayStaffOrders(token: string): Promise<StaffOrder[]> {
+  return apiRequest<StaffOrder[]>('/orders/staff/today', {
+    headers: staffHeaders(token),
+  });
+}
+
 export function confirmOrderPayment(token: string, orderId: number): Promise<StaffOrder> {
   return apiRequest<StaffOrder>(`/orders/${orderId}/payment`, {
     method: 'PATCH',

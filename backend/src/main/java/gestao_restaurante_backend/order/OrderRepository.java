@@ -17,6 +17,10 @@ public interface OrderRepository extends JpaRepository<CustomerOrder, Integer> {
 
 	List<CustomerOrder> findAllByStatusCodeOrderByCreatedAtDesc(int statusCode);
 
+	List<CustomerOrder> findAllByCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByCreatedAtDesc(
+			LocalDateTime createdAtOrAfter,
+			LocalDateTime createdBefore);
+
 	boolean existsByTable_TableNumberAndStatusCodeAndCreatedAtAfter(
 			int tableNumber,
 			int statusCode,

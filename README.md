@@ -52,6 +52,8 @@ por meio da API Spring Boot.
   nível de acesso confirmado pelo backend.
 - `GET /api/orders/staff/pending` com `X-Staff-Token` — lista pedidos pendentes
   para a equipe.
+- `GET /api/orders/staff/today` com `X-Staff-Token` — lista todas as transações
+  do dia, disponível somente para o gerente.
 - `PATCH /api/orders/{id}/payment` com `X-Staff-Token` — confirma o pagamento
   (nível Pleno ou Gerente).
 - `POST /api/tables` com `X-Staff-Token`, `numero` e `pessoas` — cadastra uma
