@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Alert,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -29,29 +28,30 @@ export default function OrdersScreen() {
     removeProduct,
     clearCart,
     selectedTableNumber,
+    tableSessionToken,
   } = useCart();
-  const [tableNumber, setTableNumber] = useState(
-    String(selectedTableNumber ?? 1),
-  );
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [ordersError, setOrdersError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
 
-  useEffect(() => {
-    if (selectedTableNumber !== null) {
-      setTableNumber(String(selectedTableNumber));
-    }
-  }, [selectedTableNumber]);
-
   useFocusEffect(
     useCallback(() => {
       let active = true;
+      if (selectedTableNumber === null || tableSessionToken === null) {
+        setOrders([]);
+        setOrdersError('Selecione uma mesa na tela inicial para consultar os pedidos.');
+        setLoadingOrders(false);
+        return () => {
+          active = false;
+        };
+      }
+
       setLoadingOrders(true);
       setOrdersError('');
 
-      getOrders()
+      getOrders(selectedTableNumber, tableSessionToken)
         .then((loadedOrders) => {
           if (active) setOrders(loadedOrders);
         })
@@ -71,7 +71,7 @@ export default function OrdersScreen() {
       return () => {
         active = false;
       };
-    }, []),
+    }, [selectedTableNumber, tableSessionToken]),
   );
 
   const totalCents = items.reduce(
@@ -80,9 +80,8 @@ export default function OrdersScreen() {
   );
 
   async function confirmOrder() {
-    const parsedTableNumber = Number(tableNumber);
-    if (!Number.isInteger(parsedTableNumber) || parsedTableNumber < 1) {
-      Alert.alert('Mesa inválida', 'Informe o número da mesa para continuar.');
+    if (selectedTableNumber === null || tableSessionToken === null) {
+      Alert.alert('Mesa não selecionada', 'Volte à tela inicial e selecione uma mesa.');
       return;
     }
     if (items.length === 0) {
@@ -94,7 +93,8 @@ export default function OrdersScreen() {
     setConfirmationMessage('');
     try {
       const order = await createOrder({
-        tableNumber: parsedTableNumber,
+        tableNumber: selectedTableNumber,
+        sessionToken: tableSessionToken,
         items: items.map(({ product, quantity }) => ({
           productId: product.id,
           quantity,
@@ -180,13 +180,9 @@ export default function OrdersScreen() {
 
                 <View style={styles.tableRow}>
                   <Text style={styles.tableLabel}>Número da mesa</Text>
-                  <TextInput
-                    accessibilityLabel="Número da mesa"
-                    keyboardType="number-pad"
-                    value={tableNumber}
-                    onChangeText={setTableNumber}
-                    style={styles.tableInput}
-                  />
+                  <Text style={styles.tableInput}>
+                    {selectedTableNumber ?? 'Não selecionada'}
+                  </Text>
                 </View>
                 <View style={styles.totalRow}>
                   <Text style={styles.totalLabel}>Total</Text>

@@ -7,30 +7,31 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "customer_orders")
+@Table(name = "pedidos")
 public class CustomerOrder {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Integer id;
 
-	@Column(nullable = false)
-	private int tableNumber;
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@JoinColumn(name = "num_mesa", nullable = false)
+	private Mesa table;
 
-	@Column(nullable = false)
-	private String status;
+	@Column(name = "status", nullable = false)
+	private int statusCode;
 
-	@Column(nullable = false)
-	private long totalCents;
-
-	@Column(nullable = false)
+	@Column(name = "data_criacao")
 	private LocalDateTime createdAt;
 
 	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -39,32 +40,39 @@ public class CustomerOrder {
 	protected CustomerOrder() {
 	}
 
-	public CustomerOrder(int tableNumber) {
-		this.tableNumber = tableNumber;
-		this.status = "confirmed";
+	public CustomerOrder(Mesa table) {
+		this.table = table;
+		this.statusCode = 1;
 		this.createdAt = LocalDateTime.now();
 	}
 
 	public void addItem(OrderItem item) {
 		items.add(item);
 		item.setOrder(this);
-		totalCents += item.getSubtotalCents();
 	}
 
-	public Long getId() {
+	public Integer getId() {
 		return id;
 	}
 
 	public int getTableNumber() {
-		return tableNumber;
+		return table.getTableNumber();
 	}
 
 	public String getStatus() {
-		return status;
+		return switch (statusCode) {
+			case 0 -> "pending";
+			case 1 -> "confirmed";
+			case 2 -> "preparing";
+			case 3 -> "out_for_delivery";
+			case 4 -> "delivered";
+			case 5 -> "cancelled";
+			default -> throw new IllegalStateException("Status de pedido inválido no banco: " + statusCode);
+		};
 	}
 
 	public long getTotalCents() {
-		return totalCents;
+		return items.stream().mapToLong(OrderItem::getSubtotalCents).sum();
 	}
 
 	public LocalDateTime getCreatedAt() {

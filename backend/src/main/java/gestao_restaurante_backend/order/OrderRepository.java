@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrderRepository extends JpaRepository<CustomerOrder, Long> {
-	List<CustomerOrder> findAllByOrderByCreatedAtDesc();
+public interface OrderRepository extends JpaRepository<CustomerOrder, Integer> {
+	List<CustomerOrder> findAllByTable_TableNumberOrderByCreatedAtDesc(int tableNumber);
+
+	List<CustomerOrder> findAllByTable_TableNumber(int tableNumber);
 }

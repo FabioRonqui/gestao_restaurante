@@ -12,6 +12,7 @@ const STATUS = {
 
 export default function Mesas() {
   const [mesas, setMesas] = useState([]);
+  const [totalMesas, setTotalMesas] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -19,7 +20,8 @@ export default function Mesas() {
     loadMesas()
       .then((storedMesas) => {
         if (isMounted) {
-          setMesas(storedMesas);
+          setMesas(storedMesas.mesas);
+          setTotalMesas(storedMesas.totalMesas);
         }
       })
       .catch((error) => {
@@ -58,6 +60,9 @@ export default function Mesas() {
           <span>Delícias Rápidas</span>
         </div>
         <h1 className="mesas-title">Mesas</h1>
+        <p className="mesas-total">
+          {totalMesas} {totalMesas === 1 ? 'mesa cadastrada' : 'mesas cadastradas'}
+        </p>
       </header>
 
       <section className="mesas-card" aria-label="Lista de mesas">

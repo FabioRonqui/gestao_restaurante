@@ -1,46 +1,46 @@
 package gestao_restaurante_backend.product;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "menu_products")
+@Table(name = "produtos")
 public class Product {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Integer id;
 
-	@Column(nullable = false)
+	@Column(name = "nome", nullable = false, length = 150)
 	private String name;
 
-	@Column(nullable = false)
-	private int priceCents;
+	@Column(name = "valor", nullable = false, precision = 10, scale = 2)
+	private BigDecimal price;
 
-	@Column(nullable = false, length = 1000)
+	@Column(name = "descricao", columnDefinition = "text")
 	private String description;
 
+	@Column(name = "imagem", length = 255)
 	private String imageUrl;
 
-	@Column(nullable = false)
-	private String category;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "categoria_id")
+	private ProductCategory category;
 
 	protected Product() {
 	}
 
-	public Product(String name, int priceCents, String description, String imageUrl, String category) {
-		this.name = name;
-		this.priceCents = priceCents;
-		this.description = description;
-		this.imageUrl = imageUrl;
-		this.category = category;
-	}
-
-	public Long getId() {
+	public Integer getId() {
 		return id;
 	}
 
@@ -48,8 +48,8 @@ public class Product {
 		return name;
 	}
 
-	public int getPriceCents() {
-		return priceCents;
+	public long getPriceCents() {
+		return price.movePointRight(2).setScale(0, RoundingMode.HALF_UP).longValueExact();
 	}
 
 	public String getDescription() {
@@ -60,7 +60,7 @@ public class Product {
 		return imageUrl;
 	}
 
-	public String getCategory() {
-		return category;
+	public String getCategoryName() {
+		return category == null ? "" : category.getName();
 	}
 }

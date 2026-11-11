@@ -17,8 +17,11 @@ type CartContextValue = {
   items: CartItem[];
   itemCount: number;
   selectedTableNumber: number | null;
+  tableSessionToken: string | null;
   addProduct: (product: Product) => void;
   setSelectedTableNumber: (tableNumber: number) => void;
+  setTableSession: (tableNumber: number, token: string) => void;
+  clearTableSession: () => void;
   setQuantity: (productId: number, quantity: number) => void;
   removeProduct: (productId: number) => void;
   clearCart: () => void;
@@ -29,12 +32,14 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [selectedTableNumber, setSelectedTableNumber] = useState<number | null>(null);
+  const [tableSessionToken, setTableSessionToken] = useState<string | null>(null);
 
   const value = useMemo<CartContextValue>(
     () => ({
       items,
       itemCount: items.reduce((total, item) => total + item.quantity, 0),
       selectedTableNumber,
+      tableSessionToken,
       addProduct: (product) => {
         setItems((current) => {
           const existing = current.find((item) => item.product.id === product.id);
@@ -50,6 +55,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       },
       setSelectedTableNumber: (tableNumber) =>
         setSelectedTableNumber(tableNumber),
+      setTableSession: (tableNumber, token) => {
+        setSelectedTableNumber(tableNumber);
+        setTableSessionToken(token);
+      },
+      clearTableSession: () => {
+        setSelectedTableNumber(null);
+        setTableSessionToken(null);
+      },
       setQuantity: (productId, quantity) => {
         setItems((current) =>
           quantity < 1
@@ -66,7 +79,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       },
       clearCart: () => setItems([]),
     }),
-    [items, selectedTableNumber],
+    [items, selectedTableNumber, tableSessionToken],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

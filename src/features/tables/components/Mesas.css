@@ -61,6 +61,12 @@
   color: var(--mesas-texto);
 }
 
+.mesas-total {
+  margin: 8px 0 0;
+  color: var(--mesas-texto-suave);
+  font-size: 0.9rem;
+}
+
 .mesas-card {
   background: var(--mesas-superficie);
   border: 1px solid var(--mesas-borda);

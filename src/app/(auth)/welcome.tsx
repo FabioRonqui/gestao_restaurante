@@ -8,12 +8,18 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
+  Animated,
 } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { theme } from '../../constants/theme';
 import BrandLogo  from '../../components/ui/BrandLogo';
 import { addMesa } from '../../features/tables/data/mesasStorage';
+import { useCart } from '../../features/cart/CartContext';
+import {
+  getTableAvailability,
+  startTableSession,
+} from '../../features/orders/services/orderService';
 //SOBRE O IMPORT:(react)
 //Quando o import busca multiplos arquivos, ele usa chaves.
 //E quando o import busca apenas um arquivo, ele não usa chaves.
@@ -21,19 +27,116 @@ export default function WelcomeScreen() {
   const [tableNumber, setTableNumber] = useState('');
   const [isAddTableModalVisible, setIsAddTableModalVisible] = useState(false);
   const [isAddingTable, setIsAddingTable] = useState(false);
+  const [isStartingSession, setIsStartingSession] = useState(false);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [isTableAvailable, setIsTableAvailable] = useState<boolean | null>(null);
+  const [availabilityError, setAvailabilityError] = useState('');
+  const [availabilityRetry, setAvailabilityRetry] = useState(0);
+  const unavailableAnimation = useRef(new Animated.Value(0)).current;
+  const {
+    clearCart,
+    selectedTableNumber,
+    tableSessionToken,
+    setTableSession,
+  } = useCart();
   const isTableNumberValid =
     Number.isSafeInteger(Number(tableNumber)) && Number(tableNumber) > 0;
 
-  const openProducts = () => {
+  useEffect(() => {
+    if (isTableAvailable === false) {
+      Animated.timing(unavailableAnimation, {
+        toValue: 1,
+        duration: 280,
+        useNativeDriver: true,
+      }).start();
+      return;
+    }
+
+    unavailableAnimation.setValue(0);
+  }, [isTableAvailable, unavailableAnimation]);
+
+  useEffect(() => {
+    if (!isTableNumberValid) {
+      setIsTableAvailable(null);
+      setAvailabilityError('');
+      setIsCheckingAvailability(false);
+      return;
+    }
+
+    let active = true;
+    setIsCheckingAvailability(true);
+    setIsTableAvailable(null);
+    setAvailabilityError('');
+    const timeout = setTimeout(() => {
+      getTableAvailability(Number(tableNumber), tableSessionToken)
+        .then(({ available }) => {
+          if (active) setIsTableAvailable(available);
+        })
+        .catch((error: unknown) => {
+          if (active) {
+            setAvailabilityError(
+              error instanceof Error
+                ? error.message
+                : 'Não foi possível verificar a disponibilidade da mesa.',
+            );
+          }
+        })
+        .finally(() => {
+          if (active) setIsCheckingAvailability(false);
+        });
+    }, 350);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [availabilityRetry, isTableNumberValid, tableNumber, tableSessionToken]);
+
+  const openProducts = async () => {
     if (!isTableNumberValid) {
       Alert.alert('Número da mesa inválido', 'Informe um número de mesa válido para continuar.');
       return;
     }
+    if (!isTableAvailable) return;
 
-    router.push({
-      pathname: '/products',
-      params: { tableNumber },
-    });
+    const selectedNumber = Number(tableNumber);
+    if (
+      tableSessionToken !== null &&
+      selectedTableNumber !== null &&
+      selectedTableNumber !== selectedNumber
+    ) {
+      Alert.alert(
+        'Mesa já selecionada',
+        'Para escolher outra mesa, use o botão X Sair e desocupe a mesa atual primeiro.',
+      );
+      return;
+    }
+
+    setIsStartingSession(true);
+    try {
+      const session = await startTableSession(selectedNumber, tableSessionToken);
+      if (session.token !== tableSessionToken) clearCart();
+      setTableSession(selectedNumber, session.token);
+      router.push({
+        pathname: '/products',
+        params: { tableNumber },
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Tente novamente em instantes.';
+      if (message.includes('nao esta disponivel')) {
+        setIsTableAvailable(false);
+        return;
+      }
+      Alert.alert(
+        'Não foi possível iniciar o pedido',
+        message,
+      );
+    } finally {
+      setIsStartingSession(false);
+    }
   };
 
   const requestAddTable = () => {
@@ -85,7 +188,10 @@ export default function WelcomeScreen() {
             accessibilityLabel="Número da mesa"
             style={styles.tableInput}
             value={tableNumber}
-            onChangeText={(value) => setTableNumber(value.replace(/\D/g, ''))}
+            onChangeText={(value) => {
+              setTableNumber(value.replace(/\D/g, ''));
+              setIsTableAvailable(null);
+            }}
             placeholder="Número da mesa"
             placeholderTextColor="#777777"
             keyboardType="number-pad"
@@ -100,14 +206,81 @@ export default function WelcomeScreen() {
           </Pressable>
         </View>
 
+        {isCheckingAvailability ? (
+          <Text style={styles.availabilityMessage}>
+            Verificando disponibilidade da mesa...
+          </Text>
+        ) : isTableAvailable === false ? (
+          <Animated.View
+            accessibilityRole="alert"
+            style={[
+              styles.unavailableMessage,
+              {
+                opacity: unavailableAnimation,
+                transform: [
+                  {
+                    translateY: unavailableAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [-8, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <Text style={styles.unavailableMessageText}>
+              Infelizmente essa mesa nao esta disponivel, Tente outro numero
+            </Text>
+          </Animated.View>
+        ) : availabilityError ? (
+          <View style={styles.availabilityError}>
+            <Text accessibilityRole="alert" style={styles.unavailableMessage}>
+              Não foi possível verificar a mesa. Confira sua conexão e tente novamente.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setAvailabilityRetry((retry) => retry + 1)}
+            >
+              <Text style={styles.retryAvailabilityText}>Tentar novamente</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
         <Pressable
           accessibilityRole="button"
-          accessibilityState={{ disabled: !isTableNumberValid }}
-          disabled={!isTableNumberValid}
-          style={[styles.button, !isTableNumberValid && styles.buttonDisabled]}
-          onPress={openProducts}
+          accessibilityState={{
+            disabled:
+              !isTableNumberValid ||
+              isStartingSession ||
+              isCheckingAvailability ||
+              isTableAvailable !== true ||
+              Boolean(availabilityError),
+          }}
+          disabled={
+            !isTableNumberValid ||
+            isStartingSession ||
+            isCheckingAvailability ||
+            isTableAvailable !== true ||
+            Boolean(availabilityError)
+          }
+          style={[
+            styles.button,
+            (!isTableNumberValid ||
+              isStartingSession ||
+              isCheckingAvailability ||
+              isTableAvailable !== true ||
+              Boolean(availabilityError)) &&
+              styles.buttonDisabled,
+          ]}
+          onPress={() => void openProducts()}
         >
-          <Text style={styles.buttonText}>Ver produtos</Text>
+          <Text style={styles.buttonText}>
+            {isStartingSession
+              ? 'Preparando mesa...'
+              : isCheckingAvailability
+                ? 'Verificando mesa...'
+                : 'Ver produtos'}
+          </Text>
         </Pressable>
       </View>
 
@@ -230,6 +403,36 @@ const styles = StyleSheet.create({
     color: theme.colors.buttonText,
     fontSize: 16,
     fontWeight: '500',
+  },
+  availabilityMessage: {
+    width: '100%',
+    marginTop: 10,
+    color: '#FFFFFF',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  unavailableMessage: {
+    width: '100%',
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: '#FFF0ED',
+  },
+  unavailableMessageText: {
+    color: '#A3261D',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  availabilityError: {
+    alignItems: 'center',
+  },
+  retryAvailabilityText: {
+    marginTop: 8,
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
   footer: {
     width: '100%',

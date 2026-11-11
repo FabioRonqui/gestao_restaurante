@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,17 +27,28 @@ import gestao_restaurante_backend.product.ProductRepository;
 public class OrderController {
 
 	private final OrderRepository orders;
+	private final MesaRepository mesas;
+	private final MesaSessaoService tableSessions;
 	private final ProductRepository products;
 
-	public OrderController(OrderRepository orders, ProductRepository products) {
+	public OrderController(
+			OrderRepository orders,
+			MesaRepository mesas,
+			MesaSessaoService tableSessions,
+			ProductRepository products) {
 		this.orders = orders;
+		this.mesas = mesas;
+		this.tableSessions = tableSessions;
 		this.products = products;
 	}
 
 	@GetMapping
 	@Transactional(readOnly = true)
-	public List<OrderResponse> listOrders() {
-		return orders.findAllByOrderByCreatedAtDesc().stream()
+	public List<OrderResponse> listOrders(
+			@RequestParam @Min(1) int tableNumber,
+			@RequestParam String sessionToken) {
+		tableSessions.requireActiveSession(tableNumber, sessionToken);
+		return orders.findAllByTable_TableNumberOrderByCreatedAtDesc(tableNumber).stream()
 				.map(OrderResponse::from)
 				.toList();
 	}
@@ -45,7 +57,11 @@ public class OrderController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@Transactional
 	public OrderResponse createOrder(@Valid @RequestBody CreateOrderRequest request) {
-		CustomerOrder order = new CustomerOrder(request.tableNumber());
+		tableSessions.requireActiveSession(request.tableNumber(), request.sessionToken());
+		Mesa table = mesas.findById(request.tableNumber())
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND, "Mesa não encontrada: " + request.tableNumber()));
+		CustomerOrder order = new CustomerOrder(table);
 		for (CreateOrderItemRequest itemRequest : request.items()) {
 			Product product = products.findById(itemRequest.productId())
 					.orElseThrow(() -> new ResponseStatusException(
@@ -57,16 +73,17 @@ public class OrderController {
 
 	public record CreateOrderRequest(
 			@NotNull @Min(1) Integer tableNumber,
+			@NotNull String sessionToken,
 			@NotEmpty List<@Valid CreateOrderItemRequest> items) {
 	}
 
 	public record CreateOrderItemRequest(
-			@NotNull Long productId,
+			@NotNull @Min(1) Integer productId,
 			@NotNull @Min(1) Integer quantity) {
 	}
 
 	public record OrderResponse(
-			Long id,
+			Integer id,
 			int tableNumber,
 			String status,
 			long totalCents,
@@ -84,10 +101,10 @@ public class OrderController {
 	}
 
 	public record OrderItemResponse(
-			Long productId,
+			Integer productId,
 			String name,
 			int quantity,
-			int unitPriceCents,
+			long unitPriceCents,
 			long subtotalCents) {
 		static OrderItemResponse from(OrderItem item) {
 			return new OrderItemResponse(
