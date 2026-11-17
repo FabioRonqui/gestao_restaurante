@@ -4,7 +4,7 @@ $apiUrl = 'http://localhost:8080/api/products'
 
 try {
   $products = Invoke-RestMethod -Uri $apiUrl -TimeoutSec 3
-  if ($products -is [array] -and $products.Count -gt 0) {
+  if ($products -is [array]) {
     Write-Host "Spring Boot already serves $($products.Count) products at $apiUrl."
     exit 0
   }

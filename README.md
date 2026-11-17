@@ -29,7 +29,8 @@ por meio da API Spring Boot.
    Se o backend já estiver ativo, o launcher reutiliza a API. Caso contrário,
    inicia o Spring Boot em outra janela. Mantenha os terminais abertos. Se o
    banco ou a API falhar, confira as mensagens do Spring Boot. A API fica
-   disponível em `http://localhost:8080/api`.
+   disponível em `http://localhost:8080/api`. Uma lista vazia de produtos é
+   válida; sem produtos cadastrados, o cardápio também ficará vazio.
 5. O backend valida o esquema existente e espera as tabelas `mesa`, `categorias`,
    `produtos`, `pedidos` e `itens_pedido`. Ele não cria nem insere produtos de
    exemplo; cadastre os produtos e categorias no MySQL. A tabela `funcionarios`

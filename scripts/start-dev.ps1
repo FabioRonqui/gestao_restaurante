@@ -34,7 +34,7 @@ function Test-TcpPort {
 
 try {
   $response = Invoke-RestMethod -Uri $apiUrl -TimeoutSec 3
-  if ($response -is [array] -and $response.Count -gt 0) {
+  if ($response -is [array]) {
     $apiReady = $true
     Write-Host "API already running: $($response.Count) products loaded from MySQL."
   }
@@ -68,13 +68,13 @@ if (-not $apiReady) {
   while ((Get-Date) -lt $deadline) {
     try {
       $response = Invoke-RestMethod -Uri $apiUrl -TimeoutSec 3
-      if ($response -is [array] -and $response.Count -gt 0) {
+      if ($response -is [array]) {
         $apiReady = $true
         Write-Host "API ready: $($response.Count) products loaded from MySQL."
         break
       }
 
-      throw 'API responded, but returned no products.'
+      throw 'API responded with an unexpected products payload.'
     }
     catch {
       Start-Sleep -Seconds 2
