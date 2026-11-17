@@ -82,7 +82,7 @@ public class CustomerOrder {
 	}
 
 	public long getTotalCents() {
-		return items.stream().mapToLong(OrderItem::getSubtotalCents).sum();
+		return items.stream().mapToLong(item -> item.getSubtotalCents()).sum();
 	}
 
 	public LocalDateTime getCreatedAt() {

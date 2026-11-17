@@ -52,7 +52,7 @@ public class MesaSessaoService {
 		LocalDateTime now = LocalDateTime.now();
 		Set<Integer> occupiedTableNumbers = sessions.findAll().stream()
 				.filter(session -> isOccupied(session, now))
-				.map(MesaSessao::getTableNumber)
+				.map(session -> session.getTableNumber())
 				.collect(Collectors.toSet());
 		List<TableResponse> tableList = mesas.findAllByOrderByTableNumberAsc().stream()
 				.map(table -> new TableResponse(
