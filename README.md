@@ -90,11 +90,12 @@ Na primeira inicialização, as 16 mesas que existiam no cadastro local anterior
 são inseridas em `mesa` caso ainda não estejam cadastradas. Mesas adicionadas
 depois também são persistidas no MySQL.
 
-No primeiro início, são criados os REs `000202` (Junior), `000505` (Pleno) e
-`10000` (Gerente), usando as senhas configuradas no ambiente. O Gerente pode
-cadastrar outros funcionários com RE de seis dígitos: os três últimos dígitos
-começando com `2` definem Junior e com `5` definem Pleno. Senhas são armazenadas
-com hash no banco.
+Ao iniciar o backend, são criados ou atualizados os REs `000202` (Junior),
+`000505` (Pleno) e `10000` (Gerente), usando as senhas configuradas no ambiente.
+Assim, as senhas dessas contas acompanham os valores atuais do `.env` após
+reiniciar o backend. O Gerente pode cadastrar outros funcionários com RE de seis
+dígitos: os três últimos dígitos começando com `2` definem Junior e com `5`
+definem Pleno. Senhas são armazenadas com hash no banco.
 
 O número da mesa selecionada e o token da sessão ficam salvos no armazenamento
 local do dispositivo/navegador para que o histórico de pedidos continue acessível

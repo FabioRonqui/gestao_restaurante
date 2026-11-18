@@ -47,6 +47,10 @@ public class StaffMember {
 		return passwordHash;
 	}
 
+	void updatePasswordHash(String passwordHash) {
+		this.passwordHash = passwordHash;
+	}
+
 	public StaffRole getRole() {
 		return role;
 	}

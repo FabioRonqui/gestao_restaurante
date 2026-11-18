@@ -96,9 +96,10 @@ public class StaffAuthService {
 			throw new IllegalStateException(
 					"Configure STAFF_" + role + "_PASSWORD no ambiente ou em backend/.env antes de iniciar.");
 		}
-		if (!staff.existsById(re)) {
-			staff.save(new StaffMember(re, name, hash(password), role));
-		}
+		staff.findById(re).ifPresentOrElse(member -> {
+			member.updatePasswordHash(hash(password));
+			staff.save(member);
+		}, () -> staff.save(new StaffMember(re, name, hash(password), role)));
 	}
 
 	private String hash(String password) {

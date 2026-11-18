@@ -12,9 +12,12 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import gestao_restaurante_backend.staff.StaffAuthService;
+import gestao_restaurante_backend.staff.StaffRepository;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.junit.jupiter.api.Test;
@@ -40,6 +43,9 @@ class BackendApplicationTests {
 
 	@Autowired
 	private JdbcTemplate jdbc;
+
+	@Autowired
+	private StaffRepository staff;
 
 	private final HttpClient http = HttpClient.newHttpClient();
 
@@ -69,6 +75,35 @@ class BackendApplicationTests {
 		String managerToken = login("10000", managerPassword);
 		assertTrue(request("GET", "/api/staff/session", managerToken, null).body().contains("\"role\":\"GERENTE\""));
 		assertEquals(200, request("GET", "/api/staff", managerToken, null).statusCode());
+	}
+
+	@Test
+	void bootstrapPasswordsRefreshExistingStaffAccounts() throws Exception {
+		String[] registrationNumbers = { "000202", "000505", "10000" };
+		String[] originalHashes = new String[registrationNumbers.length];
+		for (int index = 0; index < registrationNumbers.length; index++) {
+			originalHashes[index] = jdbc.queryForObject(
+					"SELECT senha_hash FROM funcionarios WHERE re = ?",
+					String.class,
+					registrationNumbers[index]);
+		}
+
+		try {
+			String staleHash = Base64.getEncoder().encodeToString(new byte[16])
+					+ ":" + Base64.getEncoder().encodeToString(new byte[32]);
+			jdbc.update("UPDATE funcionarios SET senha_hash = ? WHERE re = '000202'", staleHash);
+
+			new StaffAuthService(staff, juniorPassword, plenoPassword, managerPassword);
+
+			login("000202", juniorPassword);
+		} finally {
+			for (int index = 0; index < registrationNumbers.length; index++) {
+				jdbc.update(
+						"UPDATE funcionarios SET senha_hash = ? WHERE re = ?",
+						originalHashes[index],
+						registrationNumbers[index]);
+			}
+		}
 	}
 
 	@Test
