@@ -411,6 +411,15 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
         {canManage && (!isManager || managerView === 'menu') ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Cardápio</Text>
+              {isManager ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.push('/products/manage')}
+                  style={[styles.primaryButton, styles.fullButton]}
+                >
+                  <Text style={styles.primaryButtonText}>Gerenciar produtos</Text>
+                </Pressable>
+              ) : null}
               <Text style={styles.bodyText}>Pleno pode adicionar; somente o gerente pode remover.</Text>
               <TextInput accessibilityLabel="Nome do prato" onChangeText={setProductName} placeholder="Nome do prato" style={styles.input} value={productName} />
               <TextInput accessibilityLabel="Preço do prato" keyboardType="decimal-pad" onChangeText={setProductPrice} placeholder="Preço (R$)" style={styles.input} value={productPrice} />

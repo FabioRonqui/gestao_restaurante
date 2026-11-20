@@ -27,6 +27,8 @@ export default function Layout() {
         <Tabs
           screenOptions={{ headerShown: false }}
           tabBar={(props) => {
+            if (pathname === '/products/manage') return null;
+
             const currentRoute = props.state.routes[props.state.index].name;
 
             if (
