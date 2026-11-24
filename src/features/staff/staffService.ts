@@ -69,6 +69,17 @@ export function getTodayStaffOrders(token: string): Promise<StaffOrder[]> {
   });
 }
 
+export function getStaffOrdersInRange(
+  token: string,
+  from: string,
+  to: string,
+): Promise<StaffOrder[]> {
+  return apiRequest<StaffOrder[]>(
+    `/orders/staff/range?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+    { headers: staffHeaders(token) },
+  );
+}
+
 export function confirmOrderPayment(token: string, orderId: number): Promise<StaffOrder> {
   return apiRequest<StaffOrder>(`/orders/${orderId}/payment`, {
     method: 'PATCH',

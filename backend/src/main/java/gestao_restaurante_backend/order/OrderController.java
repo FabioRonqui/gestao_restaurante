@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,6 +72,24 @@ public class OrderController {
 		return orders.findAllByCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByCreatedAtDesc(
 						today.atStartOfDay(),
 						today.plusDays(1).atStartOfDay())
+				.stream()
+				.map(OrderResponse::from)
+				.toList();
+	}
+
+	@GetMapping("/staff/range")
+	@Transactional(readOnly = true)
+	public List<OrderResponse> listOrdersInRange(
+			@RequestHeader("X-Staff-Token") String token,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+		staffAuth.requireAtLeast(token, StaffRole.GERENTE);
+		if (from.isAfter(to)) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O início do período deve ser anterior ao fim.");
+		}
+		return orders.findAllByCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByCreatedAtDesc(
+						from.atStartOfDay(),
+						to.plusDays(1).atStartOfDay())
 				.stream()
 				.map(OrderResponse::from)
 				.toList();

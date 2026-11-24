@@ -11,6 +11,7 @@ import java.net.http.HttpResponse;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.regex.Matcher;
@@ -195,6 +196,42 @@ class BackendApplicationTests {
 			assertTrue(response.body().contains("\"id\":" + todayPendingId));
 			assertTrue(response.body().contains("\"id\":" + todayConfirmedId));
 			assertFalse(response.body().contains("\"id\":" + yesterdayOrderId));
+		} finally {
+			cleanupTable(tableNumber);
+		}
+	}
+
+	@Test
+	void onlyManagerCanReadOrdersInDateRange() throws Exception {
+		int tableNumber = 990003;
+		cleanupTable(tableNumber);
+		jdbc.update(
+				"INSERT INTO mesa (numero_mesa, quantidade_pessoas) VALUES (?, 2) "
+						+ "ON DUPLICATE KEY UPDATE quantidade_pessoas = 2",
+				tableNumber);
+
+		try {
+			LocalDate today = LocalDate.now();
+			int firstDayOrderId = addPendingOrder(tableNumber, today.atStartOfDay());
+			int lastDayOrderId = addPendingOrder(tableNumber, today.plusDays(1).atStartOfDay().minusSeconds(1));
+			int outsideRangeOrderId = addPendingOrder(tableNumber, today.plusDays(1).atStartOfDay());
+
+			String juniorToken = login("000202", juniorPassword);
+			assertEquals(
+					403,
+					request("GET", "/api/orders/staff/range?from=" + today + "&to=" + today, juniorToken, null)
+							.statusCode());
+
+			String managerToken = login("10000", managerPassword);
+			HttpResponse<String> response = request(
+					"GET",
+					"/api/orders/staff/range?from=" + today + "&to=" + today,
+					managerToken,
+					null);
+			assertEquals(200, response.statusCode());
+			assertTrue(response.body().contains("\"id\":" + firstDayOrderId));
+			assertTrue(response.body().contains("\"id\":" + lastDayOrderId));
+			assertFalse(response.body().contains("\"id\":" + outsideRangeOrderId));
 		} finally {
 			cleanupTable(tableNumber);
 		}

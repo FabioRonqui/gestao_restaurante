@@ -28,6 +28,7 @@ import {
 } from '../staffService';
 import type { StaffMember, StaffOrder, StaffSession } from '../types';
 import type { TableRecord } from '../../tables/services/tableService';
+import StaffStatistics from './StaffStatistics';
 
 const ACCESS_LABELS = {
   JUNIOR: 'Junior',
@@ -39,13 +40,14 @@ type StaffDashboardProps = {
   session: StaffSession;
 };
 
-type ManagerView = 'transactions' | 'tables' | 'menu' | 'staff';
+type ManagerView = 'transactions' | 'tables' | 'menu' | 'staff' | 'statistics';
 
 const MANAGER_NAV: { key: ManagerView; label: string }[] = [
   { key: 'transactions', label: 'Transações do dia' },
   { key: 'tables', label: 'Mesas' },
   { key: 'menu', label: 'Cardápio' },
   { key: 'staff', label: 'Funcionários' },
+  { key: 'statistics', label: 'Estatísticas' },
 ];
 
 function getOrderStatusLabel(status: StaffOrder['status']) {
@@ -379,6 +381,10 @@ export default function StaffDashboard({ session }: StaffDashboardProps) {
             </View>
           </View>
         ))}
+
+        {isManager && managerView === 'statistics' ? (
+          <StaffStatistics session={session} products={products} />
+        ) : null}
 
         {canManage && (!isManager || managerView === 'tables') ? (
             <View style={styles.section}>
